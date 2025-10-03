@@ -1,0 +1,248 @@
+import React, { useEffect, useRef, useState } from 'react';
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import Icon from '../../../components/AppIcon';
+import MapNavigationController from '../../../components/ui/MapNavigationController';
+
+const KIET_COORDINATES = [77.4977, 28.7520]; // KIET coordinates [longitude, latitude]
+const MAPLIBRE_STYLE_URL = 'https://demotiles.maplibre.org/style.json'; // Free vector tiles
+
+const MapContainer = ({ 
+  buses, 
+  selectedBus, 
+  onBusSelect, 
+  userLocation,
+  selectedRoutes,
+  className = '' 
+}) => {
+  const mapRef = useRef(null);
+  const mapInstance = useRef(null);
+  const [mapLayer, setMapLayer] = useState('streets');
+
+  // Filter buses based on selected routes
+  const filteredBuses = buses?.filter(bus => 
+    selectedRoutes?.length === 0 || selectedRoutes?.includes(bus?.routeId)
+  );
+
+  // Initialize map
+  useEffect(() => {
+    if (!mapRef.current || mapInstance.current) return;
+
+    mapInstance.current = new maplibregl.Map({
+      container: mapRef.current,
+      style: MAPLIBRE_STYLE_URL,
+      center: KIET_COORDINATES,
+      zoom: 13,
+      attributionControl: true
+    });
+
+    // Add navigation controls
+    mapInstance.current.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+    // Add scale control
+    mapInstance.current.addControl(new maplibregl.ScaleControl(), 'bottom-left');
+
+    // Add fullscreen control
+    mapInstance.current.addControl(new maplibregl.FullscreenControl());
+
+    // Add OpenStreetMap attribution
+    mapInstance.current.addControl(
+      new maplibregl.AttributionControl({
+        customAttribution: '© OpenStreetMap contributors'
+      })
+    );
+
+    // Clean up on unmount
+    return () => {
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+        mapInstance.current = null;
+      }
+    };
+  }, []);
+
+  // Update markers and handle bus locations
+  useEffect(() => {
+    if (!mapInstance.current) return;
+
+    filteredBuses.forEach(bus => {
+      const coordinates = [bus.longitude, bus.latitude];
+      
+      const el = document.createElement('div');
+      el.className = `bus-marker ${selectedBus?.id === bus.id ? 'selected' : ''}`;
+      
+      const busIcon = document.createElement('div');
+      busIcon.className = 'relative p-2 cursor-pointer';
+      busIcon.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary">
+          <path d="M19 17h2l.64-2.54c.24-.959.24-1.962 0-2.92l-1.07-4.27A3 3 0 0 0 17.66 5H4a2 2 0 0 0-2 2v10h2"></path>
+          <path d="M14 17H9"></path>
+          <circle cx="6.5" cy="17.5" r="2.5"></circle>
+          <circle cx="16.5" cy="17.5" r="2.5"></circle>
+        </svg>
+        ${bus.routeNumber ? `<span class="absolute -top-2 -right-2 bg-secondary text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">${bus.routeNumber}</span>` : ''}
+      `;
+      el.appendChild(busIcon);
+
+      new maplibregl.Marker(el)
+        .setLngLat(coordinates)
+        .setPopup(new maplibregl.Popup({ offset: 25 })
+          .setHTML(`
+            <div class="p-2">
+              <h3 class="font-bold">${bus.routeName || 'Bus ' + bus.id}</h3>
+              <p class="text-sm">Route: ${bus.routeNumber || 'N/A'}</p>
+              <p class="text-sm">Speed: ${bus.speed || '0'} km/h</p>
+            </div>
+          `))
+        .addTo(mapInstance.current);
+
+      el.addEventListener('click', () => onBusSelect(bus));
+    });
+  }, [filteredBuses, selectedBus, onBusSelect]);
+
+  // Draw route line for selected bus
+  useEffect(() => {
+    if (!mapInstance.current || !selectedBus?.route?.coordinates) return;
+
+    const map = mapInstance.current;
+    const sourceId = 'route';
+    const layerId = 'route-line';
+
+    // Remove existing route if any
+    if (map.getLayer(layerId)) {
+      map.removeLayer(layerId);
+    }
+    if (map.getSource(sourceId)) {
+      map.removeSource(sourceId);
+    }
+
+    // Add new route
+    map.addSource(sourceId, {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: selectedBus.route.coordinates
+        }
+      }
+    });
+
+    map.addLayer({
+      id: layerId,
+      type: 'line',
+      source: sourceId,
+      layout: {
+        'line-join': 'round',
+        'line-cap': 'round'
+      },
+      paint: {
+        'line-color': '#3b82f6',
+        'line-width': 4,
+        'line-opacity': 0.8
+      }
+    });
+
+    // Center map on route
+    const bounds = selectedBus.route.coordinates.reduce((bounds, coord) => 
+      bounds.extend(coord), new maplibregl.LngLatBounds(selectedBus.route.coordinates[0], selectedBus.route.coordinates[0])
+    );
+
+    map.fitBounds(bounds, {
+      padding: 50,
+      duration: 1000
+    });
+  }, [selectedBus]);
+
+  // Handle controls
+  const handleZoomIn = () => {
+    mapInstance.current?.zoomIn();
+  };
+
+  const handleZoomOut = () => {
+    mapInstance.current?.zoomOut();
+  };
+
+  const handleCenter = () => {
+    if (!mapInstance.current) return;
+
+    const location = userLocation 
+      ? [userLocation.longitude, userLocation.latitude]
+      : selectedBus 
+        ? [selectedBus.longitude, selectedBus.latitude]
+        : KIET_COORDINATES;
+
+    mapInstance.current.flyTo({
+      center: location,
+      zoom: 15,
+      duration: 1000
+    });
+  };
+
+  const handleLayerToggle = (layer) => {
+    if (!mapInstance.current) return;
+
+    const styles = {
+      streets: MAPLIBRE_STYLE_URL,
+      satellite: 'https://api.maptiler.com/maps/satellite/style.json',
+      hybrid: 'https://api.maptiler.com/maps/hybrid/style.json'
+    };
+
+    setMapLayer(layer);
+    if (styles[layer]) {
+      mapInstance.current.setStyle(styles[layer]);
+    }
+  };
+
+  return (
+    <div className={`relative bg-muted rounded-lg overflow-hidden ${className}`}>
+      {/* Map container */}
+      <div 
+        ref={mapRef} 
+        className="w-full h-full"
+      />
+      
+      {/* Custom map controls */}
+      <MapNavigationController
+        className="absolute bottom-4 right-4 z-10 bg-white bg-opacity-90 rounded-lg shadow-lg"
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onCenter={handleCenter}
+        onLayerChange={handleLayerToggle}
+        currentLayer={mapLayer}
+      />
+
+      {/* Legend */}
+      <div className="absolute bottom-4 left-4 bg-white bg-opacity-90 p-3 rounded-lg shadow-lg z-10">
+        <h4 className="text-xs font-medium mb-2">Legend</h4>
+        <div className="space-y-1">
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 bg-green-500 rounded-full" />
+            <span className="text-xs">On Time</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 bg-yellow-500 rounded-full" />
+            <span className="text-xs">Delayed</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-3 bg-red-500 rounded-full" />
+            <span className="text-xs">Disrupted</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Loading state */}
+      {!filteredBuses?.length && (
+        <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+          <div className="text-center">
+            <Icon name="loader-2" className="w-8 h-8 animate-spin mx-auto mb-2" />
+            <p className="text-sm">Loading bus locations...</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default MapContainer;

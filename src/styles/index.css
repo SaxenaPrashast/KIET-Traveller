@@ -1,0 +1,128 @@
+/* Map Marker Styles */
+.bus-marker {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.bus-marker:hover {
+  transform: scale(1.1);
+}
+
+.bus-marker.selected {
+  z-index: 1;
+}
+
+.bus-marker .marker-container {
+  position: relative;
+  padding: 0.5rem;
+  background-color: white;
+  border-radius: 9999px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 2px solid #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bus-marker.selected .marker-container {
+  border-color: #7c3aed;
+}
+
+.bus-marker .bus-icon {
+  width: 24px;
+  height: 24px;
+  color: #2563eb;
+}
+
+.bus-marker.selected .bus-icon {
+  color: #7c3aed;
+}
+
+.bus-marker .route-number {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  background-color: #7c3aed;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border-radius: 9999px;
+  width: 1.25rem;
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid white;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Inter;
+}
+
+* {
+  box-sizing: border-box;
+  line-height: normal;
+  font-family: inherit;
+  margin: unset;
+}
+
+/* MapLibre GL Styles */
+.maplibregl-map {
+  width: 100%;
+  height: 100%;
+  border-radius: 0.5rem;
+}
+
+.maplibregl-popup {
+  max-width: 20rem;
+}
+
+.maplibregl-popup-content {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 0.75rem;
+  border: 1px solid rgba(229, 231, 235, 1);
+}
+
+.maplibregl-popup-close-button {
+  color: rgba(107, 114, 128, 1);
+}
+
+.maplibregl-popup-close-button:hover {
+  color: rgba(55, 65, 81, 1);
+}
+
+.bus-marker {
+  cursor: pointer;
+  transition: transform 200ms ease-in-out;
+}
+
+.bus-marker:hover {
+  transform: scale(1.1);
+}
+
+.bus-marker.selected {
+  transform: scale(1.25);
+}
+
+.maplibregl-ctrl-top-right {
+  margin-right: 4rem;
+}
+
+.maplibregl-ctrl-group {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.maplibregl-ctrl-group button:hover {
+  background-color: rgba(243, 244, 246, 1);
+}
+
+.maplibregl-ctrl-group button:focus {
+  outline: none;
+}
