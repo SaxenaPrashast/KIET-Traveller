@@ -115,8 +115,9 @@ const LoginForm = () => {
   };
 
   const handleCreateAccount = () => {
-    alert('Registration functionality would be implemented here. For demo, use the provided test credentials to login.');
+    navigate('/register');
   };
+  
 
   // Auto-fill test credentials when role changes
   const handleRoleChange = (role) => {

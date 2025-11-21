@@ -2,8 +2,8 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BrandingHeader from './components/BrandingHeader';
 import LoginForm from './components/LoginForm';
-import TrustSignals from './components/TrustSignals';
-import DemoCredentials from './components/DemoCredentials';
+// import TrustSignals from './components/TrustSignals';
+// import DemoCredentials from './components/DemoCredentials';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -41,24 +41,6 @@ const LoginPage = () => {
           {/* Login Form */}
           <LoginForm />
           
-          {/* Demo Credentials
-          <DemoCredentials /> */}
-          
-          {/* Trust Signals
-          <TrustSignals /> */}
-          
-          {/* Registration Link */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted">
-              {/* Don't have an account?{' '} */}
-              {/* <button
-                onClick={() => navigate('/register')}
-                className="text-primary hover:text-primary/80 font-medium"
-              >
-                Sign up
-              </button> */}
-            </p>
-          </div>
         </div>
         
         {/* Footer */}
