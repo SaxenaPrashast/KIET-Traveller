@@ -6,8 +6,8 @@ const BrandingHeader = () => {
     <div className="text-center mb-8">
       {/* Logo */}
       <div className="flex items-center justify-center mb-6">
-        <div className="flex items-center justify-center w-16 h-16 bg-primary rounded-2xl shadow-card">
-          <Icon name="bus" size={32} color="white" />
+          <div className="flex items-center justify-center w-16 h-16 bg-primary rounded-2xl shadow-card">
+          <Icon name="Bus" size={32} color="white" />
         </div>
       </div>
 

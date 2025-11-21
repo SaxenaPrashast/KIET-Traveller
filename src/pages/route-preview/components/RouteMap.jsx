@@ -302,14 +302,14 @@ const RouteMap = ({ selectedRoute, onStopClick, shareLocationEnabled }) => {
   }, [selectedRoute]);
 
   return (
-    <div className="relative bg-card border border-border rounded-lg overflow-hidden shadow-card h-[500px]">
+    <div className="relative bg-card border border-border rounded-lg overflow-hidden shadow-card h-[300px] sm:h-[400px] lg:h-[500px]">
       {/* Map container */}
       <div ref={mapRef} className="absolute inset-0"></div>
 
       {/* Stops count */}
       <div className="absolute top-4 left-4 z-10 bg-card/90 backdrop-blur-sm border border-border rounded-lg px-3 py-2">
         <div className="flex items-center space-x-2">
-          <Icon name="mapPin" size={16} className="text-primary" />
+          <Icon name="MapPin" size={16} className="text-primary" />
           <span className="text-sm font-medium text-foreground">
             {currentStops?.length} stops
           </span>

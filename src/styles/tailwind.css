@@ -61,6 +61,62 @@
     --color-surface: #FFFFFF; /* white */
   }
 
+  .dark {
+    /* Core Colors - Dark Mode */
+    --color-background: #0F172A; /* slate-950 */
+    --color-foreground: #F1F5F9; /* slate-100 */
+    --color-border: #334155; /* slate-700 */
+    --color-input: #1E293B; /* slate-800 */
+    --color-ring: #3B82F6; /* blue-500 */
+    
+    /* Card Colors - Dark Mode */
+    --color-card: #1E293B; /* slate-800 */
+    --color-card-foreground: #F1F5F9; /* slate-100 */
+    
+    /* Popover Colors - Dark Mode */
+    --color-popover: #1E293B; /* slate-800 */
+    --color-popover-foreground: #F1F5F9; /* slate-100 */
+    
+    /* Muted Colors - Dark Mode */
+    --color-muted: #334155; /* slate-700 */
+    --color-muted-foreground: #94A3B8; /* slate-400 */
+    
+    /* Primary Colors - Dark Mode */
+    --color-primary: #3B82F6; /* blue-500 */
+    --color-primary-foreground: #0F172A; /* slate-950 */
+    
+    /* Secondary Colors - Dark Mode */
+    --color-secondary: #10B981; /* emerald-500 */
+    --color-secondary-foreground: #0F172A; /* slate-950 */
+    
+    /* Destructive Colors - Dark Mode */
+    --color-destructive: #EF4444; /* red-500 */
+    --color-destructive-foreground: #0F172A; /* slate-950 */
+    
+    /* Accent Colors - Dark Mode */
+    --color-accent: #EF4444; /* red-500 */
+    --color-accent-foreground: #0F172A; /* slate-950 */
+    
+    /* Success Colors - Dark Mode */
+    --color-success: #22C55E; /* green-500 */
+    --color-success-foreground: #0F172A; /* slate-950 */
+    
+    /* Warning Colors - Dark Mode */
+    --color-warning: #F59E0B; /* amber-500 */
+    --color-warning-foreground: #0F172A; /* slate-950 */
+    
+    /* Error Colors - Dark Mode */
+    --color-error: #EF4444; /* red-500 */
+    --color-error-foreground: #0F172A; /* slate-950 */
+    
+    /* Text Colors - Dark Mode */
+    --color-text-primary: #F1F5F9; /* slate-100 */
+    --color-text-secondary: #94A3B8; /* slate-400 */
+    
+    /* Surface Color - Dark Mode */
+    --color-surface: #1E293B; /* slate-800 */
+  }
+
   * {
     @apply border-border;
   }

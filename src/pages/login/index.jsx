@@ -41,22 +41,22 @@ const LoginPage = () => {
           {/* Login Form */}
           <LoginForm />
           
-          {/* Demo Credentials */}
-          <DemoCredentials />
+          {/* Demo Credentials
+          <DemoCredentials /> */}
           
-          {/* Trust Signals */}
-          <TrustSignals />
+          {/* Trust Signals
+          <TrustSignals /> */}
           
           {/* Registration Link */}
           <div className="mt-6 text-center">
             <p className="text-sm text-muted">
-              Don't have an account?{' '}
-              <button
+              {/* Don't have an account?{' '} */}
+              {/* <button
                 onClick={() => navigate('/register')}
                 className="text-primary hover:text-primary/80 font-medium"
               >
                 Sign up
-              </button>
+              </button> */}
             </p>
           </div>
         </div>
@@ -64,7 +64,7 @@ const LoginPage = () => {
         {/* Footer */}
         <div className="text-center mt-6">
           <p className="text-xs text-muted-foreground">
-            © {new Date()?.getFullYear()} KIET Group of Institutions. All rights reserved.
+            © {new Date()?.getFullYear()} All rights reserved.
           </p>
         </div>
       </div>

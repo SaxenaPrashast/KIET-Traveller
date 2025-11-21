@@ -111,7 +111,7 @@ const LoginForm = () => {
   };
 
   const handleForgotPassword = () => {
-    alert('Password reset functionality would be implemented here. For demo, use the provided test credentials.');
+    navigate('/forgot-password');
   };
 
   const handleCreateAccount = () => {
@@ -196,12 +196,12 @@ const LoginForm = () => {
         >
           {isLoading ? (
             <div className="flex items-center justify-center">
-              <Icon name="loader-2" className="animate-spin mr-2" size={16} />
+              <Icon name="Loader2" className="animate-spin mr-2" size={16} />
               <span>Signing In...</span>
             </div>
           ) : (
             <div className="flex items-center justify-center">
-              <Icon name="log-in" className="mr-2" size={16} />
+              <Icon name="LogIn" className="mr-2" size={16} />
               <span>Sign In</span>
             </div>
           )}
@@ -220,10 +220,9 @@ const LoginForm = () => {
           <div className="text-center">
             <span className="text-sm text-muted-foreground">Don't have an account? </span>
             <button
-              type="button"
-              onClick={handleCreateAccount}
-              className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
-            >
+                onClick={() => navigate('/register')}
+                className="text-primary hover:text-primary/80 font-medium"
+              >
               Create Account
             </button>
           </div>

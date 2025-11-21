@@ -106,19 +106,19 @@ const ChatbotWidget = () => {
   return (
     <>
       {/* Chat Widget Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
         <Button
           variant="default"
           size="icon"
           onClick={() => setIsOpen(!isOpen)}
-          className="w-14 h-14 rounded-full shadow-modal bg-primary hover:bg-primary/90"
+          className="w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-modal bg-primary hover:bg-primary/90"
         >
-          <Icon name={isOpen ? "X" : "MessageCircle"} size={24} />
+          <Icon name={isOpen ? "X" : "MessageCircle"} size={20} />
         </Button>
       </div>
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-80 h-96 bg-card border border-border rounded-lg shadow-modal z-50 flex flex-col">
+        <div className="fixed bottom-16 sm:bottom-24 right-4 sm:right-6 w-72 sm:w-80 h-80 sm:h-96 bg-card border border-border rounded-lg shadow-modal z-50 flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-border">
             <div className="flex items-center space-x-2">

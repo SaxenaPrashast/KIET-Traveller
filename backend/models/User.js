@@ -78,6 +78,17 @@ const userSchema = new mongoose.Schema({
       enum: ['light', 'dark', 'auto']
     }
   },
+  // Password reset fields
+  resetPasswordToken: {
+    type: String,
+    default: null,
+    select: false,
+    index: true
+  },
+  resetPasswordExpire: {
+    type: Date,
+    default: null
+  },
   // Driver specific fields
   driverLicense: {
     type: String,

@@ -10,8 +10,8 @@ const UserManagementPanel = () => {
   const users = [
     {
       id: 1,
-      name: "Sarah Johnson",
-      email: "sarah.johnson@kiet.edu",
+      name: "Dhruv Jain",
+      email: "dhruv.jain@kiet.edu",
       role: "student",
       status: "active",
       lastActive: "2025-09-12T16:30:00Z",
@@ -20,8 +20,8 @@ const UserManagementPanel = () => {
     },
     {
       id: 2,
-      name: "Dr. Michael Chen",
-      email: "m.chen@kiet.edu",
+      name: "Dr Sachin Tripathi",
+      email: "sachin.tripathi@kiet.edu",
       role: "staff",
       status: "active",
       lastActive: "2025-09-12T15:45:00Z",
@@ -30,8 +30,8 @@ const UserManagementPanel = () => {
     },
     {
       id: 3,
-      name: "Robert Wilson",
-      email: "r.wilson@kiet.edu",
+      name: "Monu",
+      email: "monu@kiet.edu",
       role: "driver",
       status: "active",
       lastActive: "2025-09-12T17:15:00Z",
@@ -43,7 +43,7 @@ const UserManagementPanel = () => {
       name: "Emily Davis",
       email: "emily.davis@kiet.edu",
       role: "student",
-      status: "pending",
+      status: "offline",
       lastActive: "2025-09-12T14:20:00Z",
       busRoute: "Route 4",
       avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150"

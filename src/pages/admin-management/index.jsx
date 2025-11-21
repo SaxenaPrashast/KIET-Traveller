@@ -58,7 +58,7 @@ const AdminManagement = () => {
         return (
           <div className="space-y-6">
             {/* System Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
               {systemMetrics?.map((metric, index) => (
                 <SystemMetricsCard
                   key={index}
@@ -72,11 +72,11 @@ const AdminManagement = () => {
             </div>
             {/* Quick Actions */}
             <div className="bg-card border border-border rounded-lg shadow-card">
-              <div className="p-6 border-b border-border">
+              <div className="p-4 sm:p-6 border-b border-border">
                 <h3 className="text-lg font-semibold text-foreground">Quick Actions</h3>
               </div>
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="p-4 sm:p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   <Button
                     variant="outline"
                     className="h-20 flex-col space-y-2"
@@ -198,16 +198,16 @@ const AdminManagement = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <div className="pt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-6 lg:py-8">
           {/* Page Header */}
-          <div className="mb-8">
-            <div className="flex items-center space-x-3 mb-2">
-              <div className="p-2 bg-primary/10 rounded-lg">
+          <div className="mb-6 lg:mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-2">
+              <div className="p-2 bg-primary/10 rounded-lg w-fit">
                 <Icon name="Shield" size={24} className="text-primary" />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Admin Management</h1>
-                <p className="text-muted-foreground">
+              <div className="flex-1">
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground">Admin Management</h1>
+                <p className="text-sm sm:text-base text-muted-foreground">
                   Comprehensive system oversight and user management
                 </p>
               </div>
@@ -215,20 +215,20 @@ const AdminManagement = () => {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="mb-8">
-            <div className="border-b border-border">
-              <nav className="flex space-x-8 overflow-x-auto">
+          <div className="mb-6 lg:mb-8">
+            <div className="border-b border-border overflow-x-auto">
+              <nav className="flex space-x-4 sm:space-x-6 lg:space-x-8">
                 {tabs?.map((tab) => (
                   <button
                     key={tab?.id}
                     onClick={() => setActiveTab(tab?.id)}
-                    className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-smooth ${
+                    className={`flex items-center space-x-1 sm:space-x-2 py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap transition-smooth ${
                       activeTab === tab?.id
                         ? 'border-primary text-primary' :'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                     }`}
                   >
-                    <Icon name={tab?.icon} size={18} />
-                    <span>{tab?.label}</span>
+                    <Icon name={tab?.icon} size={16} />
+                    <span className="hidden sm:inline">{tab?.label}</span>
                   </button>
                 ))}
               </nav>

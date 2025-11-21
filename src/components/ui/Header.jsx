@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../AppIcon';
 import Button from './Button';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import LogoutButton from '../LogoutButton';
 
 const Header = () => {
@@ -38,13 +39,14 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
 
   const unreadCount = notifications?.filter(n => !n?.read)?.length;
 
   const navigationItems = [
     { path: '/student-dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
     { path: '/route-preview', label: 'Routes', icon: 'Route' },
-    { path: user?.role === 'driver' ? '/driver-dashboard' : null, label: 'Driver Portal', icon: 'Truck' },
+    { path: user?.role === 'driver' ? '/driver-dashboard' : null, label: 'Driver Portal', icon: 'Truck', isDriver: user?.role === 'driver' },
   ].filter(item => item.path !== null);
 
   const secondaryItems = [
@@ -81,18 +83,29 @@ const Header = () => {
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center space-x-1">
           {navigationItems?.map((item) => (
-            <Button
-              key={item?.path}
-              variant={isActive(item?.path) ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => handleNavigation(item?.path)}
-              iconName={item?.icon}
-              iconPosition="left"
-              iconSize={16}
-              className="px-3"
-            >
-              {item?.label}
-            </Button>
+            item?.isDriver ? (
+              <div
+                key={item?.path}
+                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-primary bg-primary/10 rounded-lg"
+                title="You are logged in as Driver"
+              >
+                <Icon name={item?.icon} size={16} />
+                <span>{item?.label}</span>
+              </div>
+            ) : (
+              <Button
+                key={item?.path}
+                variant={isActive(item?.path) ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => handleNavigation(item?.path)}
+                iconName={item?.icon}
+                iconPosition="left"
+                iconSize={16}
+                className="px-3"
+              >
+                {item?.label}
+              </Button>
+            )
           ))}
 
           {/* Secondary Navigation */}
@@ -165,6 +178,16 @@ const Header = () => {
               </div>
             )}
           </div>
+
+          {/* Dark Mode Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          >
+            <Icon name={isDark ? 'Sun' : 'Moon'} size={20} />
+          </Button>
 
           {/* Logout Button */}
           <div className="ml-2 border-l border-border pl-2">
@@ -253,18 +276,29 @@ const Header = () => {
             </div>
 
             {navigationItems?.map((item) => (
-              <button
-                key={item?.path}
-                onClick={() => handleNavigation(item?.path)}
-                className={`flex items-center w-full px-3 py-3 rounded-lg text-left transition-smooth ${
-                  isActive(item?.path)
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-foreground hover:bg-muted'
-                }`}
-              >
-                <Icon name={item?.icon} size={20} className="mr-3" />
-                <span className="font-medium">{item?.label}</span>
-              </button>
+              item?.isDriver ? (
+                <div
+                  key={item?.path}
+                  className="flex items-center w-full px-3 py-3 rounded-lg text-left bg-primary/10 text-primary font-medium"
+                  title="You are logged in as Driver"
+                >
+                  <Icon name={item?.icon} size={20} className="mr-3" />
+                  <span className="font-medium">{item?.label}</span>
+                </div>
+              ) : (
+                <button
+                  key={item?.path}
+                  onClick={() => handleNavigation(item?.path)}
+                  className={`flex items-center w-full px-3 py-3 rounded-lg text-left transition-smooth ${
+                    isActive(item?.path)
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-foreground hover:bg-muted'
+                  }`}
+                >
+                  <Icon name={item?.icon} size={20} className="mr-3" />
+                  <span className="font-medium">{item?.label}</span>
+                </button>
+              )
             ))}
             
             {user?.role === 'admin' && (
@@ -283,7 +317,14 @@ const Header = () => {
               </>
             )}
             
-            <div className="mt-3 pt-3 border-t border-border">
+            <div className="mt-3 pt-3 border-t border-border space-y-2">
+              <button
+                onClick={toggleTheme}
+                className="flex items-center w-full px-3 py-3 rounded-lg text-left text-foreground hover:bg-muted transition-smooth"
+              >
+                <Icon name={isDark ? 'Sun' : 'Moon'} size={20} className="mr-3" />
+                <span className="font-medium">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+              </button>
               <LogoutButton 
                 variant="destructive"
                 size="sm"

@@ -16,13 +16,13 @@ const DriverDashboard = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="pt-16">
-        <div className="px-4 lg:px-6 pb-6">
+        <div className="px-3 sm:px-4 lg:px-6 pb-6">
           {/* Main Dashboard Grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
             {/* Left Column - Map */}
-            <div className="xl:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4 lg:space-y-6">
               {/* Route Map */}
-              <div className="h-96 lg:h-[500px]">
+              <div className="h-64 sm:h-80 lg:h-[500px]">
                 <RouteMapDisplay
                   currentRoute="route-3"
                   onLocationUpdate={handleLocationUpdate}
@@ -31,7 +31,7 @@ const DriverDashboard = () => {
             </div>
 
             {/* Right Column - Passenger and Shift Management */}
-            <div className="space-y-6">
+            <div className="space-y-4 lg:space-y-6">
               <PassengerManifest />
               <ShiftManagement />
             </div>

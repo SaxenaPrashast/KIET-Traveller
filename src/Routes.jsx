@@ -1,12 +1,15 @@
 import React from "react";
 import { BrowserRouter, Routes as RouterRoutes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import ScrollToTop from "components/ScrollToTop";
 import ErrorBoundary from "components/ErrorBoundary";
 import ProtectedRoute from "components/ProtectedRoute";
 import PublicRoute from "components/PublicRoute";
 import NotFound from "pages/NotFound";
 import LoginPage from './pages/login';
+import ForgotPassword from './pages/login/ForgotPassword';
+import ResetPassword from './pages/login/ResetPassword';
 import RegisterPage from './pages/register';
 import AdminManagement from './pages/admin-management';
 import StudentDashboard from './pages/student-dashboard';
@@ -15,15 +18,26 @@ import DriverDashboard from './pages/driver-dashboard';
 
 const Routes = () => {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <ErrorBoundary>
-          <ScrollToTop />
-          <RouterRoutes>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <ErrorBoundary>
+            <ScrollToTop />
+            <RouterRoutes>
             {/* Public Routes */}
             <Route path="/login" element={
               <PublicRoute>
                 <LoginPage />
+              </PublicRoute>
+            } />
+            <Route path="/forgot-password" element={
+              <PublicRoute>
+                <ForgotPassword />
+              </PublicRoute>
+            } />
+            <Route path="/reset-password" element={
+              <PublicRoute>
+                <ResetPassword />
               </PublicRoute>
             } />
             <Route path="/register" element={
@@ -67,7 +81,8 @@ const Routes = () => {
           </RouterRoutes>
         </ErrorBoundary>
       </BrowserRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 
