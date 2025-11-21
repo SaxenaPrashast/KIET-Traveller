@@ -4,6 +4,9 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import RealTimeStatusIndicator from '../../../components/ui/RealTimeStatusIndicator';
 
+// ⭐ IMPORT THE MAP
+import RouteMap from '../../route-preview/components/RouteMap';
+
 const LiveBusTrackingCard = () => {
   const navigate = useNavigate();
   const [busData, setBusData] = useState(null);
@@ -78,6 +81,7 @@ const LiveBusTrackingCard = () => {
 
   return (
     <div className="bg-card border border-border rounded-lg shadow-card overflow-hidden">
+      
       {/* Header */}
       <div className="p-6 pb-4">
         <div className="flex items-center justify-between mb-4">
@@ -129,36 +133,32 @@ const LiveBusTrackingCard = () => {
           </div>
         </div>
       </div>
-      {/* Map Preview */}
+
+      {/* ⭐ REPLACED GOOGLE IFRAME WITH THIS  */}
       <div className="px-6 pb-4">
-        <div className="relative w-full h-48 bg-muted rounded-lg overflow-hidden">
-          <iframe
-            width="100%"
-            height="100%"
-            loading="lazy"
-            title="Live Bus Location"
-            referrerPolicy="no-referrer-when-downgrade"
-            src={`https://www.google.com/maps?q=${busData?.coordinates?.lat},${busData?.coordinates?.lng}&z=15&output=embed`}
-            className="border-0"
+        <div className="rounded-lg overflow-hidden">
+          <RouteMap
+            selectedRoute="route-1"
+            onStopClick={() => {}}
+            shareLocationEnabled={false}
           />
-          <div className="absolute top-2 right-2 bg-card/90 backdrop-blur-sm border border-border rounded-lg px-2 py-1">
-            <span className="text-xs font-medium text-foreground">Live</span>
-          </div>
         </div>
       </div>
+
       {/* Actions */}
-      <div className="p-6 pt-0 flex space-x-3">
+      <div className="p-6 pt-0">
         <Button
           variant="outline"
           onClick={() => navigate('/route-preview')}
           iconName="Route"
           iconPosition="left"
           iconSize={16}
-          className="flex-1"
+          className="w-full"
         >
           Route Details
         </Button>
       </div>
+
     </div>
   );
 };
