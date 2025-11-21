@@ -94,6 +94,25 @@ router.post('/', authorize('admin'), validateRoute, asyncHandler(async (req, res
   // Calculate distance
   await route.calculateDistance();
 
+  // Ensure startStop and endStop are set to first and last stops when not provided
+  try {
+    let changed = false;
+    if ((!route.startStop || !route.endStop) && route.stops && route.stops.length > 0) {
+      if (!route.startStop) {
+        route.startStop = route.stops[0]._id;
+        changed = true;
+      }
+      if (!route.endStop && route.stops.length > 0) {
+        route.endStop = route.stops[route.stops.length - 1]._id;
+        changed = true;
+      }
+      if (changed) await route.save();
+    }
+  } catch (err) {
+    // non-fatal: we already created the route; log and continue
+    console.error('Failed to auto-set start/end stops:', err);
+  }
+
   res.status(201).json({
     success: true,
     message: 'Route created successfully',

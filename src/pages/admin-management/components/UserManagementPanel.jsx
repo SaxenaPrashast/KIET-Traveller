@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
+import { useAuth } from '../../../contexts/AuthContext';
+import { API_BASE } from '../../../config/constants';
 
-const UserManagementPanel = () => {
+const UserManagementPanel = ({ refreshSignal, onOpenAddUser }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  
+  const { token } = useAuth();
 
-  const users = [
+  const defaultUsers = [
     {
       id: 1,
       name: "Dhruv Jain",
@@ -49,6 +55,42 @@ const UserManagementPanel = () => {
       avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150"
     }
   ];
+
+  // fetch users from backend (admin only). If fails, fall back to defaultUsers.
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`${API_BASE}/users?page=1&limit=50`, { headers });
+      if (!res.ok) throw new Error('Failed to fetch');
+      const data = await res.json();
+      if (data && data.data && data.data.users) {
+        setUsers(data.data.users);
+      } else {
+        setUsers(defaultUsers);
+      }
+    } catch (err) {
+      setUsers(defaultUsers);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // support refreshSignal prop for parent to request a reload
+  // parent can pass `refreshSignal` which increments when new user is added
+  useEffect(() => {
+    if (typeof refreshSignal !== 'undefined') {
+      fetchUsers();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [typeof refreshSignal !== 'undefined' ? refreshSignal : null]);
 
   const getRoleColor = (role) => {
     switch (role) {
@@ -102,7 +144,7 @@ const UserManagementPanel = () => {
       <div className="p-6 border-b border-border">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-foreground">User Management</h3>
-          <Button variant="default" iconName="UserPlus" iconPosition="left" size="sm">
+          <Button variant="default" iconName="UserPlus" iconPosition="left" size="sm" onClick={() => onOpenAddUser && onOpenAddUser()}>
             Add User
           </Button>
         </div>

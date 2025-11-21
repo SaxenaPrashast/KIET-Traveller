@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { API_BASE } from '../../../config/constants';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const RouteManagementPanel = () => {
   const [selectedRoute, setSelectedRoute] = useState(null);
+  const [routes, setRoutes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const { token } = useAuth();
 
-  const routes = [
+  const defaultRoutes = [
     {
       id: 1,
       name: "Route 1 - Main Campus",
@@ -56,6 +61,32 @@ const RouteManagementPanel = () => {
     }
   ];
 
+  const fetchRoutes = async () => {
+    setLoading(true);
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const res = await fetch(`${API_BASE}/routes?page=1&limit=50`, { headers });
+      if (!res.ok) throw new Error('Failed to fetch routes');
+      const data = await res.json();
+      setRoutes((data && data.data && data.data.routes) ? data.data.routes : defaultRoutes);
+    } catch (err) {
+      setRoutes(defaultRoutes);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRoutes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (typeof refreshSignal !== 'undefined') fetchRoutes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [typeof refreshSignal !== 'undefined' ? refreshSignal : null]);
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'active':
@@ -97,7 +128,7 @@ const RouteManagementPanel = () => {
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-foreground">Route Management</h3>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" iconName="Plus" iconPosition="left" size="sm">
+            <Button variant="outline" iconName="Plus" iconPosition="left" size="sm" onClick={() => onOpenAddRoute && onOpenAddRoute()}>
               Add Route
             </Button>
             <Button variant="default" iconName="Settings" iconPosition="left" size="sm">

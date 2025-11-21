@@ -126,7 +126,8 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.message || 'Registration failed');
       }
 
-      return { success: true, message: data.message };
+      // Return the full response so callers can access created user / tokens
+      return data;
     } catch (error) {
       console.error('Registration error:', error);
       throw new Error(error.message || 'Registration failed');

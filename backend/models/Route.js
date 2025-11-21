@@ -63,12 +63,12 @@ const routeSchema = new mongoose.Schema({
   startStop: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Stop',
-    required: true
+    // optional to allow creating routes without predefined stop documents
   },
   endStop: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Stop',
-    required: true
+    // optional to allow creating routes without predefined stop documents
   },
   totalDistance: {
     type: Number, // in kilometers

@@ -8,9 +8,15 @@ import FeedbackManagementPanel from './components/FeedbackManagementPanel';
 import NotificationCenter from './components/NotificationCenter';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import AddUserModal from './components/AddUserModal';
+import AddRouteModal from './components/AddRouteModal';
 
 const AdminManagement = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [showAddUser, setShowAddUser] = useState(false);
+  const [userRefreshSignal, setUserRefreshSignal] = useState(0);
+  const [showAddRoute, setShowAddRoute] = useState(false);
+  const [routeRefreshSignal, setRouteRefreshSignal] = useState(0);
 
   const systemMetrics = [
     {
@@ -82,6 +88,7 @@ const AdminManagement = () => {
                     className="h-20 flex-col space-y-2"
                     iconName="UserPlus"
                     iconSize={24}
+                    onClick={() => setShowAddUser(true)}
                   >
                     <span>Add New User</span>
                   </Button>
@@ -90,6 +97,7 @@ const AdminManagement = () => {
                     className="h-20 flex-col space-y-2"
                     iconName="Plus"
                     iconSize={24}
+                    onClick={() => setShowAddRoute(true)}
                   >
                     <span>Create Route</span>
                   </Button>
@@ -127,6 +135,11 @@ const AdminManagement = () => {
                   </Button>
                 </div>
               </div>
+              <AddUserModal
+                open={showAddUser}
+                onClose={() => setShowAddUser(false)}
+                onUserAdded={() => setUserRefreshSignal(s => s + 1)}
+              />
             </div>
             {/* Recent Activity */}
             <div className="bg-card border border-border rounded-lg shadow-card">
@@ -180,9 +193,9 @@ const AdminManagement = () => {
           </div>
         );
       case 'users':
-        return <UserManagementPanel />;
+        return <UserManagementPanel refreshSignal={userRefreshSignal} onOpenAddUser={() => setShowAddUser(true)} />;
       case 'routes':
-        return <RouteManagementPanel />;
+        return <RouteManagementPanel refreshSignal={routeRefreshSignal} onOpenAddRoute={() => setShowAddRoute(true)} />;
       case 'monitoring':
         return <SystemMonitoringPanel />;
       case 'feedback':
@@ -239,6 +252,16 @@ const AdminManagement = () => {
           <div className="min-h-[600px]">
             {renderTabContent()}
           </div>
+          <AddUserModal
+            open={showAddUser}
+            onClose={() => setShowAddUser(false)}
+            onUserAdded={() => setUserRefreshSignal(s => s + 1)}
+          />
+          <AddRouteModal
+            open={showAddRoute}
+            onClose={() => setShowAddRoute(false)}
+            onRouteAdded={() => setRouteRefreshSignal(s => s + 1)}
+          />
         </div>
       </div>
     </div>
