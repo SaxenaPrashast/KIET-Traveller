@@ -3,6 +3,8 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import Icon from '../../../components/AppIcon';
 import MapNavigationController from '../../../components/ui/MapNavigationController';
+import { API_BASE } from '../../../config/constants';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const KIET_COORDINATES = [77.4977, 28.7520];
 
@@ -44,6 +46,46 @@ const RouteMap = ({ selectedRoute, onStopClick, shareLocationEnabled }) => {
       { id: 'stop-7', name: 'Cafeteria', coordinates: [77.5037, 28.7580], time: '08:40', delay: 0 }
     ]
   };
+
+  const { token } = useAuth();
+  const [fetchedStops, setFetchedStops] = useState(null);
+
+  // Fetch route details when selectedRoute looks like an ObjectId
+  useEffect(() => {
+    let mounted = true;
+    const loadRoute = async () => {
+      // If selectedRoute uses legacy key (route-1 etc), skip fetch
+      if (!selectedRoute || selectedRoute.startsWith('route-')) {
+        setFetchedStops(null);
+        return;
+      }
+
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch(`${API_BASE}/routes/${selectedRoute}`, { headers });
+        if (!res.ok) throw new Error('Failed to fetch route');
+        const data = await res.json();
+        const route = data?.data || data;
+        if (!mounted) return;
+
+        const stops = (route.stops || []).map(s => ({
+          id: s._id || `${s.name}-${Math.random()}`,
+          name: s.name || s.address || 'Stop',
+          coordinates: (s.location && Array.isArray(s.location.coordinates)) ? s.location.coordinates : [77.4977, 28.7520],
+          time: s.estimatedTime ? `${s.estimatedTime}m` : '',
+          delay: s.delay || 0
+        }));
+
+        setFetchedStops(stops.length ? stops : null);
+      } catch (err) {
+        setFetchedStops(null);
+      }
+    };
+
+    loadRoute();
+    return () => { mounted = false; };
+  }, [selectedRoute, token]);
 
   // Generate mock buses with animated routes
   const generateMockBuses = () => [
@@ -266,7 +308,7 @@ const RouteMap = ({ selectedRoute, onStopClick, shareLocationEnabled }) => {
     }
   }, [selectedRoute, onStopClick]);
 
-  const currentStops = routeStops?.[selectedRoute] || routeStops?.['route-1'];
+  const currentStops = fetchedStops || routeStops?.[selectedRoute] || routeStops?.['route-1'];
 
   const handleZoomIn = () => {
     if (mapInstance.current) {

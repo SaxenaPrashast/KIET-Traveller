@@ -1,17 +1,34 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { API_BASE } from '../../../config/constants';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const RouteSelector = ({ selectedRoute, onRouteChange, onBookmarkToggle, isBookmarked, onExpand, isExpanded }) => {
   const [timeFilter, setTimeFilter] = useState('all');
 
-  const routeOptions = [
-    { value: 'route-1', label: 'Route 1 - Main Campus to Hostel Block A' },
-    { value: 'route-2', label: 'Route 2 - Main Campus to Hostel Block B' },
-    { value: 'route-3', label: 'Route 3 - Main Campus to City Center' },
-    { value: 'route-4', label: 'Route 4 - Hostel to Academic Block' },
-    { value: 'route-5', label: 'Route 5 - Campus Loop Service' }
-  ];
+  const [routeOptions, setRouteOptions] = useState([]);
+  const { token } = useAuth();
+
+  useEffect(() => {
+    const fetchRoutes = async () => {
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch(`${API_BASE}/routes?page=1&limit=100`, { headers });
+        if (!res.ok) throw new Error('Failed to fetch routes');
+        const data = await res.json();
+        const options = (data?.data?.routes || []).map(r => ({ value: r._id, label: `${r.routeNumber || ''} ${r.name}`.trim() }));
+        setRouteOptions(options);
+      } catch (err) {
+        // fallback to empty; UI will show nothing
+        setRouteOptions([]);
+      }
+    };
+
+    fetchRoutes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const timeFilterOptions = [
     { value: 'all', label: 'All Day' },
@@ -46,6 +63,9 @@ const RouteSelector = ({ selectedRoute, onRouteChange, onBookmarkToggle, isBookm
           <div>
             <label className="text-sm font-medium text-foreground block mb-2">Select Route</label>
             <div className="space-y-2 max-h-48 overflow-y-auto">
+              {routeOptions.length === 0 && (
+                <div className="text-sm text-muted-foreground">No routes available</div>
+              )}
               {routeOptions.map(option => (
                 <button
                   key={option.value}

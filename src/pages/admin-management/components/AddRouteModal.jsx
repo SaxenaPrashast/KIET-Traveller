@@ -9,8 +9,8 @@ const AddRouteModal = ({ open, onClose, onRouteAdded }) => {
     routeNumber: '',
     name: '',
     estimatedDuration: 30,
-    frequency: 30,
-    capacity: 30,
+    //frequency: 30,
+    //capacity: 30,
     operatingHours: { start: '06:00', end: '22:00' },
     operatingDays: ['monday','tuesday','wednesday','thursday','friday'],
     // start/end stop name fields (no coordinates required)
@@ -81,11 +81,7 @@ const AddRouteModal = ({ open, onClose, onRouteAdded }) => {
             <Input name="routeNumber" value={form.routeNumber} onChange={handleChange} placeholder="Route Number (e.g. R-001)" />
             <Input name="name" value={form.name} onChange={handleChange} placeholder="Route Name" />
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            <Input name="estimatedDuration" value={form.estimatedDuration} onChange={handleChange} placeholder="Estimated Duration (min)" type="number" />
-            <Input name="frequency" value={form.frequency} onChange={handleChange} placeholder="Frequency (min)" type="number" />
-            <Input name="capacity" value={form.capacity} onChange={handleChange} placeholder="Capacity" type="number" />
-          </div>
+         
 
           <div className="flex gap-2">
             <div className="flex-1">
@@ -115,19 +111,12 @@ const AddRouteModal = ({ open, onClose, onRouteAdded }) => {
             <div className="space-y-1">
               <label className="text-sm font-medium text-foreground">Start Stop</label>
               <Input name="startStopName" value={form.startStopName} onChange={handleChange} placeholder="Start stop name" />
-              <div className="grid grid-cols-2 gap-2 mt-1">
-                <Input name="startStopLat" value={form.startStopLat} onChange={handleChange} placeholder="Latitude" />
-                <Input name="startStopLng" value={form.startStopLng} onChange={handleChange} placeholder="Longitude" />
-              </div>
             </div>
 
             <div className="space-y-1">
               <label className="text-sm font-medium text-foreground">End Stop</label>
               <Input name="endStopName" value={form.endStopName} onChange={handleChange} placeholder="End stop name" />
-              <div className="grid grid-cols-2 gap-2 mt-1">
-                <Input name="endStopLat" value={form.endStopLat} onChange={handleChange} placeholder="Latitude" />
-                <Input name="endStopLng" value={form.endStopLng} onChange={handleChange} placeholder="Longitude" />
-              </div>
+              
             </div>
           </div>
 
