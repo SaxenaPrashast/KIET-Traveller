@@ -5,7 +5,6 @@ import LogoutButton from '../../components/LogoutButton';
 import LiveBusTrackingCard from './components/LiveBusTrackingCard';
 import QuickActionsSection from './components/QuickActionsSection';
 import UpcomingScheduleCard from './components/UpcomingScheduleCard';
-import FavoriteRoutesCard from './components/FavoriteRoutesCard';
 import PeerCoordinationSection from './components/PeerCoordinationSection';
 import ChatbotWidget from './components/ChatbotWidget';
 
@@ -56,18 +55,13 @@ const StudentDashboard = () => {
               {/* Live Bus Tracking Card */}
               <LiveBusTrackingCard />
 
-              {/* Quick Actions */}
-              <QuickActionsSection />
-
               {/* Upcoming Schedule */}
               <UpcomingScheduleCard />
             </div>
 
             {/* Right Column */}
             <div className="space-y-6">
-              {/* Favorite Routes */}
-              <FavoriteRoutesCard />
-
+              
               {/* Peer Coordination */}
               <PeerCoordinationSection />
             </div>
@@ -95,6 +89,13 @@ const StudentDashboard = () => {
           </div>
         </div>
       </main>
+      
+      {/* Emergency Contact at bottom (centered, smaller) */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+          <div className="max-w-sm">
+            <QuickActionsSection />
+          </div>
+      </div>
 
       {/* Chatbot Widget */}
       <ChatbotWidget />
