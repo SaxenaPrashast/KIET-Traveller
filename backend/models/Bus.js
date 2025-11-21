@@ -150,7 +150,6 @@ const busSchema = new mongoose.Schema({
 
 // Index for geospatial queries
 busSchema.index({ currentLocation: '2dsphere' });
-busSchema.index({ busNumber: 1 });
 busSchema.index({ status: 1 });
 busSchema.index({ currentRoute: 1 });
 busSchema.index({ assignedDriver: 1 });

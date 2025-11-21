@@ -172,7 +172,7 @@ const routeSchema = new mongoose.Schema({
 });
 
 // Index for better query performance
-routeSchema.index({ routeNumber: 1 });
+// Note: `routeNumber` is declared as `unique: true` on the field and already creates an index.
 routeSchema.index({ isActive: 1 });
 routeSchema.index({ 'stops.location': '2dsphere' });
 routeSchema.index({ operatingDays: 1 });

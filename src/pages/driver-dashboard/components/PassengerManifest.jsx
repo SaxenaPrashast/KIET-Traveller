@@ -3,7 +3,9 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
 const PassengerManifest = () => {
-  const [selectedStop, setSelectedStop] = useState('all');
+  const [gpsEnabled, setGpsEnabled] = useState(true);
+  const [isOnline, setIsOnline] = useState(true);
+  const [passengerCount, setPassengerCount] = useState(12);
 
   const mockPassengers = [
     {
@@ -12,10 +14,7 @@ const PassengerManifest = () => {
       studentId: 'KIET2021001',
       type: 'student',
       stop: 'Library Block',
-      action: 'pickup',
-      phone: '+91 98765 43210',
-      status: 'confirmed',
-      boardingTime: null
+      status: 'confirmed'
     },
     {
       id: 'p2',
@@ -23,10 +22,7 @@ const PassengerManifest = () => {
       employeeId: 'KIET2019F001',
       type: 'faculty',
       stop: 'Hostel Complex',
-      action: 'dropoff',
-      phone: '+91 98765 43211',
-      status: 'onboard',
-      boardingTime: '09:15'
+      status: 'onboard'
     },
     {
       id: 'p3',
@@ -34,10 +30,7 @@ const PassengerManifest = () => {
       studentId: 'KIET2022003',
       type: 'student',
       stop: 'Sports Complex',
-      action: 'pickup',
-      phone: '+91 98765 43212',
-      status: 'waiting',
-      boardingTime: null
+      status: 'waiting'
     },
     {
       id: 'p4',
@@ -45,10 +38,7 @@ const PassengerManifest = () => {
       studentId: 'KIET2021004',
       type: 'student',
       stop: 'Main Gate',
-      action: 'dropoff',
-      phone: '+91 98765 43213',
-      status: 'onboard',
-      boardingTime: '09:10'
+      status: 'onboard'
     },
     {
       id: 'p5',
@@ -56,42 +46,21 @@ const PassengerManifest = () => {
       employeeId: 'KIET2018F002',
       type: 'faculty',
       stop: 'Library Block',
-      action: 'pickup',
-      phone: '+91 98765 43214',
-      status: 'confirmed',
-      boardingTime: null
+      status: 'confirmed'
     }
   ];
 
-  const stops = ['all', 'Main Gate', 'Library Block', 'Hostel Complex', 'Sports Complex'];
-
-  const filteredPassengers = selectedStop === 'all' 
-    ? mockPassengers 
-    : mockPassengers?.filter(p => p?.stop === selectedStop);
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'onboard':
-        return 'text-success bg-success/10 border-success';
-      case 'confirmed':
-        return 'text-primary bg-primary/10 border-primary';
-      case 'waiting':
-        return 'text-warning bg-warning/10 border-warning';
-      default:
-        return 'text-muted-foreground bg-muted border-border';
-    }
+  const handleGPSToggle = () => {
+    setGpsEnabled(!gpsEnabled);
   };
 
-  const getActionIcon = (action) => {
-    return action === 'pickup' ? 'UserPlus' : 'UserMinus';
+  const handleStatusToggle = () => {
+    setIsOnline(!isOnline);
   };
 
-  const getActionColor = (action) => {
-    return action === 'pickup' ? 'text-success' : 'text-warning';
-  };
-
-  const handlePassengerAction = (passengerId, action) => {
-    console.log(`${action} passenger:`, passengerId);
+  const handlePassengerCountChange = (increment) => {
+    const newCount = Math.max(0, Math.min(50, passengerCount + increment));
+    setPassengerCount(newCount);
   };
 
   const getPassengerStats = () => {
@@ -108,18 +77,18 @@ const PassengerManifest = () => {
     <div className="bg-card border border-border rounded-lg shadow-card">
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-foreground">Passenger Manifest</h2>
+          <h2 className="text-xl font-semibold text-foreground">Passenger Summary</h2>
           <div className="flex items-center space-x-2">
             <Icon name="Users" size={20} className="text-primary" />
             <span className="font-semibold text-foreground">{stats?.total}</span>
           </div>
         </div>
 
-        {/* Statistics */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        {/* Overall Statistics */}
+        <div className="grid grid-cols-4 gap-3 mb-6">
           <div className="text-center p-3 bg-success/10 rounded-lg border border-success/20">
             <div className="text-2xl font-bold text-success">{stats?.onboard}</div>
-            <div className="text-xs text-success">Onboard</div>
+            <div className="text-xs text-success">Bus Onboard</div>
           </div>
           <div className="text-center p-3 bg-warning/10 rounded-lg border border-warning/20">
             <div className="text-2xl font-bold text-warning">{stats?.waiting}</div>
@@ -135,109 +104,73 @@ const PassengerManifest = () => {
           </div>
         </div>
 
-        {/* Stop Filter */}
-        <div className="mb-4">
-          <div className="flex flex-wrap gap-2">
-            {stops?.map((stop) => (
-              <Button
-                key={stop}
-                variant={selectedStop === stop ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedStop(stop)}
-              >
-                {stop === 'all' ? 'All Stops' : stop}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {/* Passenger List */}
-        <div className="space-y-3 max-h-96 overflow-y-auto">
-          {filteredPassengers?.map((passenger) => (
-            <div
-              key={passenger?.id}
-              className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border"
+        {/* Driver Controls as Buttons */}
+        <div className="border-t border-border pt-6">
+          <h3 className="text-sm font-medium text-muted-foreground mb-3">Driver Controls</h3>
+          
+          {/* GPS Button */}
+          <div className="mb-3">
+            <Button
+              variant={gpsEnabled ? 'default' : 'outline'}
+              onClick={handleGPSToggle}
+              className="w-full justify-start"
             >
-              <div className="flex items-center space-x-4 flex-1">
-                <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-full">
-                  <Icon 
-                    name={passenger?.type === 'faculty' ? 'GraduationCap' : 'User'} 
-                    size={20} 
-                    className="text-primary" 
-                  />
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <h4 className="font-medium text-foreground truncate">{passenger?.name}</h4>
-                    <div className={`px-2 py-1 rounded-full border text-xs font-medium ${getStatusColor(passenger?.status)}`}>
-                      {passenger?.status}
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                    <span className="font-mono">
-                      {passenger?.type === 'faculty' ? passenger?.employeeId : passenger?.studentId}
-                    </span>
-                    <span>{passenger?.stop}</span>
-                    {passenger?.boardingTime && (
-                      <span className="font-mono">Boarded: {passenger?.boardingTime}</span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Icon 
-                    name={getActionIcon(passenger?.action)} 
-                    size={16} 
-                    className={getActionColor(passenger?.action)} 
-                  />
-                  <span className={`text-sm font-medium ${getActionColor(passenger?.action)}`}>
-                    {passenger?.action}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2 ml-4">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => window.open(`tel:${passenger?.phone}`)}
-                  title="Call passenger"
-                >
-                  <Icon name="Phone" size={16} />
-                </Button>
-                
-                {passenger?.status === 'waiting' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePassengerAction(passenger?.id, 'board')}
-                  >
-                    Board
-                  </Button>
-                )}
-                
-                {passenger?.status === 'onboard' && passenger?.action === 'dropoff' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePassengerAction(passenger?.id, 'dropoff')}
-                  >
-                    Drop Off
-                  </Button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filteredPassengers?.length === 0 && (
-          <div className="text-center py-8">
-            <Icon name="Users" size={48} className="text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">No passengers found for selected stop</p>
+              <Icon 
+                name={gpsEnabled ? 'MapPin' : 'MapPinOff'} 
+                size={16} 
+                className="mr-2" 
+              />
+              GPS Sharing: {gpsEnabled ? 'ON' : 'OFF'}
+            </Button>
           </div>
-        )}
+
+          {/* Online Status Button */}
+          <div className="mb-3">
+            <Button
+              variant={isOnline ? 'default' : 'outline'}
+              onClick={handleStatusToggle}
+              className="w-full justify-start"
+            >
+              <Icon 
+                name={isOnline ? 'Circle' : 'CircleOff'} 
+                size={16} 
+                className="mr-2" 
+              />
+              Driver Status: {isOnline ? 'Online' : 'Offline'}
+            </Button>
+          </div>
+
+          {/* Passenger Count */}
+          <div className="p-3 bg-muted/30 rounded-lg border border-border">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-2">
+                <Icon name="Users" size={16} className="text-primary" />
+                <span className="text-sm font-medium text-foreground">Passenger Count</span>
+              </div>
+              <div className="text-lg font-bold text-foreground">{passengerCount}</div>
+            </div>
+            <div className="flex items-center justify-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePassengerCountChange(-1)}
+                disabled={passengerCount <= 0}
+              >
+                <Icon name="Minus" size={14} />
+              </Button>
+              <span className="text-sm text-muted-foreground">Current:</span>
+              <span className="font-mono font-semibold text-foreground">{passengerCount}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePassengerCountChange(1)}
+                disabled={passengerCount >= 50}
+              >
+                <Icon name="Plus" size={14} />
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

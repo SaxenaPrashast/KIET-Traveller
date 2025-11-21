@@ -7,20 +7,31 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
-require('dotenv').config();
+const path = require('path');
+const fs = require('fs');
 
-// Set environment variables if not loaded from .env
-if (!process.env.MONGODB_URI) {
-  process.env.MONGODB_URI = '';
-}
-if (!process.env.JWT_SECRET) {
-  process.env.JWT_SECRET = '';
-}
-if (!process.env.JWT_REFRESH_SECRET) {
-  process.env.JWT_REFRESH_SECRET = '';
+// Load .env from backend folder and override existing env values if necessary
+// (useful during local development when an empty env var may be set in the environment)
+const envPath = path.resolve(__dirname, '.env');
+console.log('Loading .env from:', envPath);
+console.log('.env file exists:', fs.existsSync(envPath));
+
+const dotenvResult = require('dotenv').config({ path: envPath, override: true });
+if (dotenvResult.error) {
+  console.error('Error loading .env file:', dotenvResult.error);
+} else {
+  console.log('Successfully parsed .env file');
+  console.log('Parsed variables:', Object.keys(dotenvResult.parsed || {}));
+  if (dotenvResult.parsed) {
+    console.log('MONGODB_URI from dotenv:', dotenvResult.parsed.MONGODB_URI ? '(present)' : '(NOT present in parsed)');
+  }
 }
 
-console.log('MONGODB_URI:', process.env.MONGODB_URI);
+// Log presence of the variable (don't print secrets)
+console.log('MONGODB_URI in process.env:', Boolean(process.env.MONGODB_URI));
+if (process.env.MONGODB_URI) {
+  console.log('Connection string starts with:', process.env.MONGODB_URI.substring(0, 20) + '...');
+}
 
 // Import routes
 const authRoutes = require('./routes/auth');

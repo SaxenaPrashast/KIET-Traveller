@@ -9,7 +9,7 @@ const QuickActionsSection = () => {
   const quickActions = [
     {
       id: 'route-preview',
-      title: 'Route Preview',
+      title: 'Browse Routes',
       description: 'View all available routes',
       icon: 'Route',
       color: 'bg-primary/10 text-primary',

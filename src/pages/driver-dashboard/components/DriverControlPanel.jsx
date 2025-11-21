@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
-const DriverControlPanel = ({ onGPSToggle, onDelayReport, onEmergencyAlert }) => {
+const DriverControlPanel = ({ onGPSToggle }) => {
   const [gpsEnabled, setGpsEnabled] = useState(true);
   const [passengerCount, setPassengerCount] = useState(12);
   const [isOnline, setIsOnline] = useState(true);
@@ -40,37 +40,6 @@ const DriverControlPanel = ({ onGPSToggle, onDelayReport, onEmergencyAlert }) =>
       status: isOnline,
       action: handleStatusToggle,
       color: isOnline ? 'text-success' : 'text-muted-foreground'
-    }
-  ];
-
-  const quickActions = [
-    {
-      id: 'delay',
-      title: 'Report Delay',
-      icon: 'Clock',
-      variant: 'outline',
-      action: () => onDelayReport?.()
-    },
-    {
-      id: 'emergency',
-      title: 'Emergency Alert',
-      icon: 'AlertTriangle',
-      variant: 'destructive',
-      action: () => onEmergencyAlert?.()
-    },
-    {
-      id: 'maintenance',
-      title: 'Vehicle Issue',
-      icon: 'Wrench',
-      variant: 'outline',
-      action: () => console.log('Vehicle maintenance report')
-    },
-    {
-      id: 'contact',
-      title: 'Contact Control',
-      icon: 'Phone',
-      variant: 'secondary',
-      action: () => console.log('Contact transportation control')
     }
   ];
 
@@ -140,26 +109,6 @@ const DriverControlPanel = ({ onGPSToggle, onDelayReport, onEmergencyAlert }) =>
             >
               <Icon name="Plus" size={16} />
             </Button>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="space-y-3">
-          <h3 className="font-medium text-foreground mb-3">Quick Actions</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {quickActions?.map((action) => (
-              <Button
-                key={action?.id}
-                variant={action?.variant}
-                onClick={action?.action}
-                iconName={action?.icon}
-                iconPosition="left"
-                iconSize={16}
-                className="justify-start h-12"
-              >
-                {action?.title}
-              </Button>
-            ))}
           </div>
         </div>
 

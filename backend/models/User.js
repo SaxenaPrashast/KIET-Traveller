@@ -134,10 +134,9 @@ userSchema.virtual('fullName').get(function() {
 });
 
 // Index for better query performance
-userSchema.index({ email: 1 });
+// Note: fields with `unique: true` already create indexes at the field level.
+// Avoid duplicate index declarations to prevent Mongoose warnings.
 userSchema.index({ role: 1 });
-userSchema.index({ studentId: 1 });
-userSchema.index({ employeeId: 1 });
 
 // Pre-save middleware to hash password
 userSchema.pre('save', async function(next) {

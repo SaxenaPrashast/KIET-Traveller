@@ -7,9 +7,39 @@ import LogoutButton from '../LogoutButton';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      title: 'Bus Arrived',
+      message: 'Route 3 bus arrived at Library Block',
+      time: '5 mins ago',
+      read: false,
+      type: 'arrival'
+    },
+    {
+      id: 2,
+      title: 'Schedule Update',
+      message: 'Route 5 schedule delayed by 10 minutes',
+      time: '15 mins ago',
+      read: false,
+      type: 'delay'
+    },
+    {
+      id: 3,
+      title: 'Reminder',
+      message: 'Your bus departs in 30 minutes from Main Gate',
+      time: '30 mins ago',
+      read: true,
+      type: 'reminder'
+    }
+  ]);
+  
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  const unreadCount = notifications?.filter(n => !n?.read)?.length;
 
   const navigationItems = [
     { path: '/student-dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
@@ -82,6 +112,61 @@ const Header = () => {
             </Button>
           ))}
 
+          {/* Notification Bell */}
+          <div className="relative ml-2 border-l border-border pl-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setNotificationOpen(!notificationOpen)}
+              className="relative"
+            >
+              <Icon name="Bell" size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-5 h-5 bg-error text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
+            </Button>
+
+            {/* Notification Dropdown */}
+            {notificationOpen && (
+              <div className="absolute right-0 mt-2 w-80 bg-card border border-border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+                <div className="sticky top-0 bg-card border-b border-border p-4">
+                  <h3 className="font-semibold text-foreground">Notifications</h3>
+                </div>
+                
+                {notifications?.length > 0 ? (
+                  <div className="divide-y divide-border">
+                    {notifications?.map((notification) => (
+                      <div
+                        key={notification?.id}
+                        className={`p-4 hover:bg-muted/50 transition-colors cursor-pointer ${
+                          !notification?.read ? 'bg-primary/5' : ''
+                        }`}
+                      >
+                        <div className="flex items-start space-x-3">
+                          <div className={`flex-shrink-0 w-2 h-2 rounded-full mt-2 ${
+                            notification?.read ? 'bg-muted-foreground' : 'bg-primary'
+                          }`} />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-foreground text-sm">{notification?.title}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{notification?.message}</p>
+                            <p className="text-xs text-muted-foreground mt-2">{notification?.time}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center">
+                    <Icon name="Bell" size={32} className="text-muted-foreground mx-auto mb-2 opacity-50" />
+                    <p className="text-sm text-muted-foreground">No notifications</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Logout Button */}
           <div className="ml-2 border-l border-border pl-2">
             <LogoutButton 
@@ -91,15 +176,71 @@ const Header = () => {
           </div>
         </nav>
 
-        {/* Mobile Menu Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="lg:hidden"
-        >
-          <Icon name={isMenuOpen ? "X" : "Menu"} size={24} />
-        </Button>
+        {/* Mobile Menu Button and Notification */}
+        <div className="lg:hidden flex items-center space-x-2">
+          {/* Mobile Notification Bell */}
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setNotificationOpen(!notificationOpen)}
+              className="relative"
+            >
+              <Icon name="Bell" size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-5 h-5 bg-error text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
+            </Button>
+
+            {/* Mobile Notification Dropdown */}
+            {notificationOpen && (
+              <div className="absolute right-0 mt-2 w-72 bg-card border border-border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+                <div className="sticky top-0 bg-card border-b border-border p-4">
+                  <h3 className="font-semibold text-foreground">Notifications</h3>
+                </div>
+                
+                {notifications?.length > 0 ? (
+                  <div className="divide-y divide-border">
+                    {notifications?.map((notification) => (
+                      <div
+                        key={notification?.id}
+                        className={`p-4 hover:bg-muted/50 transition-colors cursor-pointer ${
+                          !notification?.read ? 'bg-primary/5' : ''
+                        }`}
+                      >
+                        <div className="flex items-start space-x-3">
+                          <div className={`flex-shrink-0 w-2 h-2 rounded-full mt-2 ${
+                            notification?.read ? 'bg-muted-foreground' : 'bg-primary'
+                          }`} />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-foreground text-sm">{notification?.title}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{notification?.message}</p>
+                            <p className="text-xs text-muted-foreground mt-2">{notification?.time}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center">
+                    <Icon name="Bell" size={32} className="text-muted-foreground mx-auto mb-2 opacity-50" />
+                    <p className="text-sm text-muted-foreground">No notifications</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            <Icon name={isMenuOpen ? "X" : "Menu"} size={24} />
+          </Button>
+        </div>
       </div>
 
       {/* Mobile Navigation */}

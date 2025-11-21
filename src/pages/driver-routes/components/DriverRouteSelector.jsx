@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
-const RouteSelector = ({ selectedRoute, onRouteChange, onBookmarkToggle, isBookmarked, onExpand, isExpanded }) => {
+const DriverRouteSelector = ({ selectedRoute, onRouteChange, onExpand, isExpanded }) => {
   const [timeFilter, setTimeFilter] = useState('all');
 
   const routeOptions = [
@@ -82,21 +82,11 @@ const RouteSelector = ({ selectedRoute, onRouteChange, onBookmarkToggle, isBookm
             </div>
           </div>
 
-          {/* Bookmark Button & Live Status */}
-          <div className="flex items-center justify-between pt-3 border-t border-border">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBookmarkToggle}
-              className={isBookmarked ? 'text-warning' : 'text-muted-foreground'}
-            >
-              <Icon name="Star" size={16} />
-              <span className="ml-2">{isBookmarked ? 'Bookmarked' : 'Bookmark'}</span>
-            </Button>
-
+          {/* Live Status */}
+          <div className="flex items-center justify-end pt-3 border-t border-border">
             <div className="flex items-center space-x-1 text-xs text-muted-foreground">
               <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
-              <span>Live</span>
+              <span>Live tracking active</span>
             </div>
           </div>
         </div>
@@ -105,4 +95,4 @@ const RouteSelector = ({ selectedRoute, onRouteChange, onBookmarkToggle, isBookm
   );
 };
 
-export default RouteSelector;
+export default DriverRouteSelector;

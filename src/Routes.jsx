@@ -10,7 +10,6 @@ import LoginPage from './pages/login';
 import RegisterPage from './pages/register';
 import AdminManagement from './pages/admin-management';
 import StudentDashboard from './pages/student-dashboard';
-import LiveBusTracking from './pages/live-bus-tracking';
 import RoutePreview from './pages/route-preview';
 import DriverDashboard from './pages/driver-dashboard';
 
