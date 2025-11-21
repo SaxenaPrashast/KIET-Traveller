@@ -149,16 +149,6 @@ const LiveBusTrackingCard = () => {
       {/* Actions */}
       <div className="p-6 pt-0 flex space-x-3">
         <Button
-          variant="default"
-          onClick={() => navigate('/live-bus-tracking')}
-          iconName="MapPin"
-          iconPosition="left"
-          iconSize={16}
-          className="flex-1"
-        >
-          View Full Map
-        </Button>
-        <Button
           variant="outline"
           onClick={() => navigate('/route-preview')}
           iconName="Route"

@@ -7,6 +7,7 @@ import QuickActionsSection from './components/QuickActionsSection';
 import UpcomingScheduleCard from './components/UpcomingScheduleCard';
 import PeerCoordinationSection from './components/PeerCoordinationSection';
 import ChatbotWidget from './components/ChatbotWidget';
+import Announcements from './components/Announcements';
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ const StudentDashboard = () => {
       
       <main className="pt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          
           {/* Welcome Section */}
           <div className="mb-8">
             <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg p-6 border border-border">
@@ -29,8 +31,8 @@ const StudentDashboard = () => {
                     Track your buses, coordinate with peers, and stay updated with real-time transportation information.
                   </p>
                 </div>
-                <LogoutButton />
               </div>
+
               <div className="mt-4 flex items-center space-x-4 text-sm">
                 <div className="flex items-center space-x-1">
                   <div className="w-2 h-2 bg-success rounded-full"></div>
@@ -50,24 +52,27 @@ const StudentDashboard = () => {
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column */}
+            
+            {/* LEFT COLUMN */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Live Bus Tracking Card */}
               <LiveBusTrackingCard />
-
-              {/* Upcoming Schedule */}
               <UpcomingScheduleCard />
+
+              {/* Emergency Contact (fixed position & spacing) */}
+              <div className="max-w-sm">
+                <QuickActionsSection />
+              </div>
             </div>
 
-            {/* Right Column */}
+            {/* RIGHT COLUMN */}
             <div className="space-y-6">
-              
-              {/* Peer Coordination */}
+              <Announcements />
               <PeerCoordinationSection />
             </div>
+
           </div>
 
-          {/* Mobile Optimized Bottom Section */}
+          {/* Mobile Stats Section */}
           <div className="mt-8 lg:hidden">
             <div className="bg-card border border-border rounded-lg p-4">
               <h3 className="font-semibold text-foreground mb-3">Quick Stats</h3>
@@ -87,17 +92,11 @@ const StudentDashboard = () => {
               </div>
             </div>
           </div>
+
         </div>
       </main>
-      
-      {/* Emergency Contact at bottom (centered, smaller) */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-          <div className="max-w-sm">
-            <QuickActionsSection />
-          </div>
-      </div>
 
-      {/* Chatbot Widget */}
+      {/* Chatbot */}
       <ChatbotWidget />
     </div>
   );
