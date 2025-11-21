@@ -16,22 +16,6 @@ const QuickActionsSection = () => {
       action: () => navigate('/route-preview')
     },
     {
-      id: 'live-tracking',
-      title: 'Live Tracking',
-      description: 'Track buses in real-time',
-      icon: 'MapPin',
-      color: 'bg-success/10 text-success',
-      action: () => navigate('/live-bus-tracking')
-    },
-    {
-      id: 'stop-reminders',
-      title: 'Stop Reminders',
-      description: 'Set arrival notifications',
-      icon: 'Bell',
-      color: 'bg-warning/10 text-warning',
-      action: () => alert('Stop reminders feature coming soon!')
-    },
-    {
       id: 'peer-sharing',
       title: 'Share Location',
       description: 'Coordinate with friends',

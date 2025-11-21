@@ -57,12 +57,6 @@ const Routes = () => {
               </ProtectedRoute>
             } />
             
-            <Route path="/live-bus-tracking" element={
-              <ProtectedRoute>
-                <LiveBusTracking />
-              </ProtectedRoute>
-            } />
-            
             <Route path="/route-preview" element={
               <ProtectedRoute>
                 <RoutePreview />

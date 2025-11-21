@@ -43,7 +43,6 @@ const Header = () => {
 
   const navigationItems = [
     { path: '/student-dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
-    { path: '/live-bus-tracking', label: 'Live Tracking', icon: 'MapPin' },
     { path: '/route-preview', label: 'Routes', icon: 'Route' },
     { path: user?.role === 'driver' ? '/driver-dashboard' : null, label: 'Driver Portal', icon: 'Truck' },
   ].filter(item => item.path !== null);

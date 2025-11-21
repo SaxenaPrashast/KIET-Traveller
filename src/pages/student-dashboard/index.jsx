@@ -1,11 +1,9 @@
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import Header from '../../components/ui/Header';
-import EmergencyAlertBanner from '../../components/ui/EmergencyAlertBanner';
 import LogoutButton from '../../components/LogoutButton';
 import LiveBusTrackingCard from './components/LiveBusTrackingCard';
 import QuickActionsSection from './components/QuickActionsSection';
-import NotificationsPanel from './components/NotificationsPanel';
 import UpcomingScheduleCard from './components/UpcomingScheduleCard';
 import FavoriteRoutesCard from './components/FavoriteRoutesCard';
 import PeerCoordinationSection from './components/PeerCoordinationSection';
@@ -20,9 +18,6 @@ const StudentDashboard = () => {
       
       <main className="pt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {/* Emergency Alerts */}
-          <EmergencyAlertBanner className="mb-6" />
-
           {/* Welcome Section */}
           <div className="mb-8">
             <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg p-6 border border-border">
@@ -70,9 +65,6 @@ const StudentDashboard = () => {
 
             {/* Right Column */}
             <div className="space-y-6">
-              {/* Notifications Panel */}
-              <NotificationsPanel />
-
               {/* Favorite Routes */}
               <FavoriteRoutesCard />
 
