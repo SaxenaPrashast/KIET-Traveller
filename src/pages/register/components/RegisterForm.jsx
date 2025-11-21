@@ -17,6 +17,8 @@ const RegisterForm = () => {
     role: 'student',
     phone: '',
     studentId: '',
+    licenseNumber: '',
+    busNumber: '',
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -24,6 +26,7 @@ const RegisterForm = () => {
   const roleOptions = [
     { value: 'student', label: 'Student' },
     { value: 'staff', label: 'Staff' },
+    { value: 'driver', label: 'Driver' },
   ];
 
   const handleInputChange = (field, value) => {
@@ -66,6 +69,14 @@ const RegisterForm = () => {
       newErrors.studentId = 'Student ID is required';
     }
 
+    if (formData.role === 'driver' && !formData.licenseNumber?.trim()) {
+      newErrors.licenseNumber = 'License Number is required';
+    }
+
+    if (formData.role === 'driver' && !formData.busNumber?.trim()) {
+      newErrors.busNumber = 'Bus Number is required';
+    }
+
     if (formData.phone && !/^[\+]?[1-9][\d]{0,15}$/.test(formData.phone)) {
       newErrors.phone = 'Please enter a valid phone number';
     }
@@ -91,7 +102,9 @@ const RegisterForm = () => {
         lastName: formData.lastName,
         role: formData.role,
         phone: formData.phone || undefined,
-        studentId: formData.role === 'student' ? formData.studentId : undefined
+        studentId: formData.role === 'student' ? formData.studentId : undefined,
+        licenseNumber: formData.role === 'driver' ? formData.licenseNumber : undefined,
+        busNumber: formData.role === 'driver' ? formData.busNumber : undefined,
       };
 
       const response = await register(registrationData);
@@ -158,6 +171,27 @@ const RegisterForm = () => {
           error={errors.studentId}
           required
         />
+      )}
+
+      {formData.role === 'driver' && (
+        <div className="grid grid-cols-2 gap-4">
+          <Input
+            label="License Number"
+            type="text"
+            value={formData.licenseNumber}
+            onChange={(e) => handleInputChange('licenseNumber', e.target.value)}
+            error={errors.licenseNumber}
+            required
+          />
+          <Input
+            label="Bus Number"
+            type="text"
+            value={formData.busNumber}
+            onChange={(e) => handleInputChange('busNumber', e.target.value)}
+            error={errors.busNumber}
+            required
+          />
+        </div>
       )}
 
       <Input
