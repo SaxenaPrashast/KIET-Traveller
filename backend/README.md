@@ -1,6 +1,6 @@
 # KIET Traveller Backend API
 
-A comprehensive backend API for the KIET Bus Tracking System built with Node.js, Express, MongoDB, and Socket.io.
+A comprehensive backend API for the KIET Bus Tracking System built with Node.js, Express, MongoDB, and Socket.io
 
 ## 🚀 Features
 
