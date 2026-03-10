@@ -1,271 +1,260 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../../components/ui/Header';
 import SystemMetricsCard from './components/SystemMetricsCard';
 import UserManagementPanel from './components/UserManagementPanel';
 import RouteManagementPanel from './components/RouteManagementPanel';
-import SystemMonitoringPanel from './components/SystemMonitoringPanel';
-import FeedbackManagementPanel from './components/FeedbackManagementPanel';
 import NotificationCenter from './components/NotificationCenter';
 import Icon from '../../components/AppIcon';
-import Button from '../../components/ui/Button';
-import AddUserModal from './components/AddUserModal';
-import AddRouteModal from './components/AddRouteModal';
+import { useAuth } from '../../contexts/AuthContext';
+import { API_BASE } from '../../config/constants';
+import BusManagementPanel from './components/BusManagementPanel';
 
 const AdminManagement = () => {
+
   const [activeTab, setActiveTab] = useState('overview');
-  const [showAddUser, setShowAddUser] = useState(false);
-  const [userRefreshSignal, setUserRefreshSignal] = useState(0);
-  const [showAddRoute, setShowAddRoute] = useState(false);
-  const [routeRefreshSignal, setRouteRefreshSignal] = useState(0);
+
+  const { token } = useAuth();
+
+  const [dashboardData, setDashboardData] = useState(null);
+
+  useEffect(() => {
+
+    const fetchDashboard = async () => {
+
+      try {
+
+        const res = await fetch(`${API_BASE}/admin/dashboard`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          setDashboardData(data.data.overview);
+        }
+
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+      }
+
+    };
+
+    if (token) fetchDashboard();
+
+  }, [token]);
 
   const systemMetrics = [
+
     {
       title: "Active Buses",
-      value: "12",
-      change: 8.2,
+      value: dashboardData?.buses?.activeBuses ?? 0,
       icon: "Bus",
       color: "primary"
     },
+
     {
       title: "Total Users",
-      value: "1,247",
-      change: 12.5,
+      value: dashboardData?.users?.totalUsers ?? 0,
       icon: "Users",
       color: "success"
     },
+
     {
       title: "Routes Operating",
-      value: "4",
-      change: 0,
+      value: dashboardData?.routes?.activeRoutes ?? 0,
       icon: "Route",
       color: "warning"
     },
+
     {
-      title: "System Uptime",
-      value: "99.8%",
-      change: 0.3,
-      icon: "Activity",
-      color: "success"
+      title: "Total Drivers",
+      value: dashboardData?.users?.roleCounts?.filter(r => r.role === "driver").length ?? 0,
+      icon: "UserCheck",
+      color: "primary"
     }
+
   ];
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: 'LayoutDashboard' },
     { id: 'users', label: 'Users', icon: 'Users' },
     { id: 'routes', label: 'Routes', icon: 'Route' },
-    { id: 'monitoring', label: 'Monitoring', icon: 'Activity' },
-    { id: 'feedback', label: 'Feedback', icon: 'MessageSquare' },
+    { id: 'buses', label: 'Buses', icon: 'Bus' },
     { id: 'notifications', label: 'Notifications', icon: 'Bell' }
   ];
 
   const renderTabContent = () => {
+
     switch (activeTab) {
+
       case 'overview':
         return (
+
           <div className="space-y-6">
-            {/* System Metrics */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              {systemMetrics?.map((metric, index) => (
+
+            {/* Metrics */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+              {systemMetrics.map((metric, index) => (
+
                 <SystemMetricsCard
                   key={index}
-                  title={metric?.title}
-                  value={metric?.value}
-                  change={metric?.change}
-                  icon={metric?.icon}
-                  color={metric?.color}
+                  title={metric.title}
+                  value={metric.value}
+                  icon={metric.icon}
+                  color={metric.color}
                 />
+
               ))}
+
             </div>
-            {/* Quick Actions */}
-            <div className="bg-card border border-border rounded-lg shadow-card">
-              <div className="p-4 sm:p-6 border-b border-border">
-                <h3 className="text-lg font-semibold text-foreground">Quick Actions</h3>
-              </div>
-              <div className="p-4 sm:p-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                  <Button
-                    variant="outline"
-                    className="h-20 flex-col space-y-2"
-                    iconName="UserPlus"
-                    iconSize={24}
-                    onClick={() => setShowAddUser(true)}
-                  >
-                    <span>Add New User</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="h-20 flex-col space-y-2"
-                    iconName="Plus"
-                    iconSize={24}
-                    onClick={() => setShowAddRoute(true)}
-                  >
-                    <span>Create Route</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="h-20 flex-col space-y-2"
-                    iconName="Bell"
-                    iconSize={24}
-                  >
-                    <span>Send Alert</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="h-20 flex-col space-y-2"
-                    iconName="Download"
-                    iconSize={24}
-                  >
-                    <span>Export Data</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="h-20 flex-col space-y-2"
-                    iconName="Settings"
-                    iconSize={24}
-                  >
-                    <span>System Settings</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="h-20 flex-col space-y-2"
-                    iconName="BarChart3"
-                    iconSize={24}
-                  >
-                    <span>View Reports</span>
-                  </Button>
+
+            {/* System Summary */}
+            <div className="bg-card border border-border rounded-lg shadow-card p-6">
+
+              <h3 className="text-lg font-semibold text-foreground mb-4">
+                System Overview
+              </h3>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+                <div className="p-4 bg-muted/30 rounded-lg text-center">
+                  <Icon name="Bus" size={22} className="mx-auto text-primary mb-2"/>
+                  <p className="text-lg font-semibold text-foreground">
+                    {dashboardData?.buses?.activeBuses ?? 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Active Buses
+                  </p>
                 </div>
-              </div>
-              <AddUserModal
-                open={showAddUser}
-                onClose={() => setShowAddUser(false)}
-                onUserAdded={() => setUserRefreshSignal(s => s + 1)}
-              />
-            </div>
-            {/* Recent Activity */}
-            <div className="bg-card border border-border rounded-lg shadow-card">
-              <div className="p-6 border-b border-border">
-                <h3 className="text-lg font-semibold text-foreground">Recent Activity</h3>
-              </div>
-              <div className="p-6">
-                <div className="space-y-4">
-                  {[
-                    {
-                      icon: 'UserCheck',
-                      title: 'New user registration approved',
-                      description: 'Sarah Johnson (student) - Route 3',
-                      time: '5 minutes ago',
-                      color: 'text-success'
-                    },
-                    {
-                      icon: 'AlertTriangle',
-                      title: 'Route delay reported',
-                      description: 'Route 3 - 15 minute delay due to traffic',
-                      time: '12 minutes ago',
-                      color: 'text-warning'
-                    },
-                    {
-                      icon: 'MessageSquare',
-                      title: 'New feedback received',
-                      description: 'Complaint about bus cleanliness - Route 2',
-                      time: '25 minutes ago',
-                      color: 'text-primary'
-                    },
-                    {
-                      icon: 'Settings',
-                      title: 'System maintenance completed',
-                      description: 'Database optimization and backup',
-                      time: '1 hour ago',
-                      color: 'text-success'
-                    }
-                  ]?.map((activity, index) => (
-                    <div key={index} className="flex items-start space-x-3 p-3 border border-border rounded-lg">
-                      <Icon name={activity?.icon} size={20} className={activity?.color} />
-                      <div className="flex-1">
-                        <h4 className="font-medium text-foreground">{activity?.title}</h4>
-                        <p className="text-sm text-muted-foreground">{activity?.description}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{activity?.time}</p>
-                      </div>
-                    </div>
-                  ))}
+
+                <div className="p-4 bg-muted/30 rounded-lg text-center">
+                  <Icon name="Users" size={22} className="mx-auto text-success mb-2"/>
+                  <p className="text-lg font-semibold text-foreground">
+                    {dashboardData?.users?.totalUsers ?? 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Registered Users
+                  </p>
                 </div>
+
+                <div className="p-4 bg-muted/30 rounded-lg text-center">
+                  <Icon name="Route" size={22} className="mx-auto text-warning mb-2"/>
+                  <p className="text-lg font-semibold text-foreground">
+                    {dashboardData?.routes?.activeRoutes ?? 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Active Routes
+                  </p>
+                </div>
+
+                <div className="p-4 bg-muted/30 rounded-lg text-center">
+                  <Icon name="UserCheck" size={22} className="mx-auto text-primary mb-2"/>
+                  <p className="text-lg font-semibold text-foreground">
+                    {dashboardData?.users?.roleCounts?.filter(r => r.role === "driver").length ?? 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Drivers
+                  </p>
+                </div>
+
               </div>
+
             </div>
+
           </div>
+
         );
+
       case 'users':
-        return <UserManagementPanel refreshSignal={userRefreshSignal} onOpenAddUser={() => setShowAddUser(true)} />;
+        return <UserManagementPanel />;
+
       case 'routes':
-        return <RouteManagementPanel refreshSignal={routeRefreshSignal} onOpenAddRoute={() => setShowAddRoute(true)} />;
-      case 'monitoring':
-        return <SystemMonitoringPanel />;
-      case 'feedback':
-        return <FeedbackManagementPanel />;
+        return <RouteManagementPanel />;
+
+      case 'buses':
+        return <BusManagementPanel />;
+
       case 'notifications':
         return <NotificationCenter />;
+
       default:
         return null;
+
     }
+
   };
 
   return (
+
     <div className="min-h-screen bg-background">
+
       <Header />
+
       <div className="pt-16">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-6 lg:py-8">
-          {/* Page Header */}
-          <div className="mb-6 lg:mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-2">
-              <div className="p-2 bg-primary/10 rounded-lg w-fit">
-                <Icon name="Shield" size={24} className="text-primary" />
-              </div>
-              <div className="flex-1">
-                <h1 className="text-xl sm:text-2xl font-bold text-foreground">Admin Management</h1>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  Comprehensive system oversight and user management
-                </p>
-              </div>
+
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+
+          {/* Title */}
+          <div className="mb-8 flex items-center space-x-3">
+
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Icon name="Shield" size={24} className="text-primary" />
             </div>
+
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">
+                Admin Management
+              </h1>
+              <p className="text-muted-foreground">
+                Comprehensive system oversight and user management
+              </p>
+            </div>
+
           </div>
 
-          {/* Navigation Tabs */}
-          <div className="mb-6 lg:mb-8">
-            <div className="border-b border-border overflow-x-auto">
-              <nav className="flex space-x-4 sm:space-x-6 lg:space-x-8">
-                {tabs?.map((tab) => (
-                  <button
-                    key={tab?.id}
-                    onClick={() => setActiveTab(tab?.id)}
-                    className={`flex items-center space-x-1 sm:space-x-2 py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap transition-smooth ${
-                      activeTab === tab?.id
-                        ? 'border-primary text-primary' :'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
-                    }`}
-                  >
-                    <Icon name={tab?.icon} size={16} />
-                    <span className="hidden sm:inline">{tab?.label}</span>
-                  </button>
-                ))}
-              </nav>
-            </div>
+          {/* Tabs */}
+          <div className="border-b border-border mb-8">
+
+            <nav className="flex space-x-6">
+
+              {tabs.map(tab => (
+
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center space-x-2 py-3 border-b-2 text-sm ${
+                    activeTab === tab.id
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-muted-foreground'
+                  }`}
+                >
+
+                  <Icon name={tab.icon} size={16} />
+
+                  <span>{tab.label}</span>
+
+                </button>
+
+              ))}
+
+            </nav>
+
           </div>
 
           {/* Tab Content */}
-          <div className="min-h-[600px]">
-            {renderTabContent()}
-          </div>
-          <AddUserModal
-            open={showAddUser}
-            onClose={() => setShowAddUser(false)}
-            onUserAdded={() => setUserRefreshSignal(s => s + 1)}
-          />
-          <AddRouteModal
-            open={showAddRoute}
-            onClose={() => setShowAddRoute(false)}
-            onRouteAdded={() => setRouteRefreshSignal(s => s + 1)}
-          />
+          {renderTabContent()}
+
         </div>
+
       </div>
+
     </div>
+
   );
+
 };
 
 export default AdminManagement;

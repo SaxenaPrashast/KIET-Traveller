@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import axios from 'axios';
+import { useAuth } from '../../../contexts/AuthContext';
 
 /**
  * Announcements component
@@ -18,37 +20,48 @@ const severityStyles = {
 };
 
 const Announcements = () => {
+  const { token } = useAuth();
   const [items, setItems] = useState([]);
   const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {
-    // Replace with API call if available
-    const mockAnnouncements = [
-      {
-        id: 'a1',
-        title: 'Exam day transport timings updated',
-        body: 'On 10th Dec buses will run on special timetable. Check route preview for details.',
-        severity: 'info',
-        date: new Date().toISOString()
-      },
-      {
-        id: 'a2',
-        title: 'Hostel route temporarily diverted',
-        body: 'Due to maintenance on Block C road, the Hostel route will take alternate path for 2 days.',
-        severity: 'warning',
-        date: new Date(Date.now() - 1000 * 60 * 60 * 6).toISOString()
-      },
-      {
-        id: 'a3',
-        title: 'Service disruption on KIET-03',
-        body: 'Driver reported mechanical issue — expect delays up to 30 mins. Use alternate KIET-01 if urgent.',
-        severity: 'critical',
-        date: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString()
-      }
-    ];
 
-    setItems(mockAnnouncements);
-  }, []);
+    const fetchAnnouncements = async () => {
+  
+      try {
+  
+        const res = await axios.get(
+          "http://localhost:5000/api/notifications",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+  
+        const notifications = res.data.data.notifications;
+  
+        const formatted = notifications.map(n => ({
+          id: n._id,
+          title: n.title,
+          body: n.message,
+          severity: n.priority === "high" ? "critical" : "info",
+          date: n.createdAt
+        }));
+  
+        setItems(formatted);
+  
+      } catch (error) {
+        console.error("Error fetching announcements:", error);
+      }
+  
+    };
+  
+    if (token) {
+      fetchAnnouncements();
+    }
+  
+  }, [token]);
 
   const dismissItem = (id) => {
     setItems(prev => prev.filter(i => i.id !== id));

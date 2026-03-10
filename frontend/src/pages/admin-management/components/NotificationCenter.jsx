@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
+import { useAuth } from '../../../contexts/AuthContext';
+import { API_BASE } from '../../../config/constants';
 
 const NotificationCenter = () => {
+
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [notificationText, setNotificationText] = useState('');
-  const [selectedRoutes, setSelectedRoutes] = useState([]);
   const [selectedUserTypes, setSelectedUserTypes] = useState([]);
+  const [recentNotifications, setRecentNotifications] = useState([]);
+
+  const { token } = useAuth();
 
   const templates = [
     {
@@ -32,13 +37,6 @@ const NotificationCenter = () => {
     }
   ];
 
-  const routes = [
-    { id: 'route1', name: 'Route 1 - Main Campus' },
-    { id: 'route2', name: 'Route 2 - Hostel Circuit' },
-    { id: 'route3', name: 'Route 3 - City Center' },
-    { id: 'route4', name: 'Route 4 - Residential Area' }
-  ];
-
   const userTypes = [
     { id: 'students', name: 'Students' },
     { id: 'staff', name: 'Staff' },
@@ -46,78 +44,98 @@ const NotificationCenter = () => {
     { id: 'all', name: 'All Users' }
   ];
 
-  const recentNotifications = [
-    {
-      id: 1,
-      title: 'Route 3 Delay Alert',
-      content: 'Route 3 is experiencing a 15 minute delay due to traffic congestion.',
-      sentTo: 'Route 3 Users',
-      timestamp: new Date('2025-09-12T16:30:00Z'),
-      status: 'sent',
-      recipients: 58
-    },
-    {
-      id: 2,
-      title: 'System Maintenance Notice',
-      content: 'Scheduled maintenance tonight from 2:00 AM to 4:00 AM.',
-      sentTo: 'All Users',
-      timestamp: new Date('2025-09-12T14:15:00Z'),
-      status: 'sent',
-      recipients: 1247
-    },
-    {
-      id: 3,
-      title: 'New Feature Announcement',
-      content: 'Real-time seat availability feature now available in the app.',
-      sentTo: 'Students',
-      timestamp: new Date('2025-09-12T10:00:00Z'),
-      status: 'sent',
-      recipients: 892
-    }
-  ];
-
   const handleTemplateSelect = (template) => {
     setSelectedTemplate(template?.id);
     setNotificationText(template?.content);
   };
 
-  const handleRouteToggle = (routeId) => {
-    setSelectedRoutes(prev => 
-      prev?.includes(routeId) 
-        ? prev?.filter(id => id !== routeId)
-        : [...prev, routeId]
-    );
-  };
-
   const handleUserTypeToggle = (userType) => {
-    setSelectedUserTypes(prev => 
-      prev?.includes(userType) 
+    setSelectedUserTypes(prev =>
+      prev?.includes(userType)
         ? prev?.filter(type => type !== userType)
         : [...prev, userType]
     );
   };
 
-  const handleSendNotification = () => {
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/notifications`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setRecentNotifications(data.data.notifications);
+      }
+
+    } catch (err) {
+      console.error("Fetch notifications error:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchNotifications();
+    }
+  }, [token]);
+
+  const handleSendNotification = async () => {
+
     if (!notificationText?.trim() || selectedUserTypes?.length === 0) {
       return;
     }
-    
-    // Simulate sending notification
-    console.log('Sending notification:', {
-      content: notificationText,
-      routes: selectedRoutes,
-      userTypes: selectedUserTypes
+
+    let roles = [];
+
+    selectedUserTypes.forEach(type => {
+
+      if (type === "students") roles.push("student");
+      if (type === "staff") roles.push("staff");
+      if (type === "drivers") roles.push("driver");
+
+      if (type === "all") {
+        roles = ["student", "staff", "driver"];
+      }
+
     });
-    
-    // Reset form
+
+    try {
+
+      const res = await fetch(`${API_BASE}/notifications`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: "Admin Notification",
+          message: notificationText,
+          targetRoles: roles
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        fetchNotifications();
+      }
+
+    } catch (err) {
+      console.error("Notification send error:", err);
+    }
+
     setNotificationText('');
-    setSelectedRoutes([]);
     setSelectedUserTypes([]);
     setSelectedTemplate('');
   };
 
   const formatTimestamp = (timestamp) => {
-    return timestamp?.toLocaleDateString('en-US', {
+    const date = new Date(timestamp);
+
+    return date?.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -127,157 +145,159 @@ const NotificationCenter = () => {
 
   return (
     <div className="space-y-6">
-      {/* Send New Notification */}
+
       <div className="bg-card border border-border rounded-lg shadow-card">
         <div className="p-6 border-b border-border">
           <h3 className="text-lg font-semibold text-foreground">Send Notification</h3>
         </div>
+
         <div className="p-6 space-y-6">
-          {/* Templates */}
+
           <div>
             <label className="block text-sm font-medium text-foreground mb-3">
               Quick Templates
             </label>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {templates?.map((template) => (
+
                 <button
                   key={template?.id}
                   onClick={() => handleTemplateSelect(template)}
-                  className={`p-3 text-left border rounded-lg transition-smooth ${
+                  className={`p-3 text-left border rounded-lg ${
                     selectedTemplate === template?.id
-                      ? 'border-primary bg-primary/5' :'border-border hover:bg-muted/50'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:bg-muted/50'
                   }`}
                 >
-                  <h4 className="font-medium text-foreground">{template?.title}</h4>
-                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+
+                  <h4 className="font-medium text-foreground">
+                    {template?.title}
+                  </h4>
+
+                  <p className="text-sm text-muted-foreground mt-1">
                     {template?.content}
                   </p>
+
                 </button>
+
               ))}
             </div>
           </div>
 
-          {/* Message Content */}
-          <div>
-            <Input
-              label="Notification Message"
-              type="text"
-              placeholder="Enter your notification message..."
-              value={notificationText}
-              onChange={(e) => setNotificationText(e?.target?.value)}
-              required
-            />
-          </div>
+          <Input
+            label="Notification Message"
+            type="text"
+            placeholder="Enter your notification message..."
+            value={notificationText}
+            onChange={(e) => setNotificationText(e.target.value)}
+          />
 
-          {/* Target Routes */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-3">
-              Target Routes (Optional)
-            </label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {routes?.map((route) => (
-                <label
-                  key={route?.id}
-                  className="flex items-center space-x-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-smooth"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedRoutes?.includes(route?.id)}
-                    onChange={() => handleRouteToggle(route?.id)}
-                    className="w-4 h-4 text-primary border-border rounded focus:ring-primary"
-                  />
-                  <span className="text-sm text-foreground">{route?.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
 
-          {/* Target User Types */}
-          <div>
             <label className="block text-sm font-medium text-foreground mb-3">
               Target Users *
             </label>
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+
               {userTypes?.map((userType) => (
+
                 <label
-                  key={userType?.id}
-                  className="flex items-center space-x-3 p-3 border border-border rounded-lg cursor-pointer hover:bg-muted/50 transition-smooth"
+                  key={userType.id}
+                  className="flex items-center space-x-3 p-3 border border-border rounded-lg"
                 >
+
                   <input
                     type="checkbox"
-                    checked={selectedUserTypes?.includes(userType?.id)}
-                    onChange={() => handleUserTypeToggle(userType?.id)}
-                    className="w-4 h-4 text-primary border-border rounded focus:ring-primary"
+                    checked={selectedUserTypes.includes(userType.id)}
+                    onChange={() => handleUserTypeToggle(userType.id)}
                   />
-                  <span className="text-sm text-foreground">{userType?.name}</span>
+
+                  <span className="text-sm text-foreground">
+                    {userType.name}
+                  </span>
+
                 </label>
+
               ))}
+
             </div>
+
           </div>
 
-          {/* Send Button */}
-          <div className="flex items-center justify-end space-x-3">
+          <div className="flex justify-end space-x-3">
+
             <Button
               variant="outline"
               onClick={() => {
                 setNotificationText('');
-                setSelectedRoutes([]);
                 setSelectedUserTypes([]);
                 setSelectedTemplate('');
               }}
             >
               Clear
             </Button>
+
             <Button
-              variant="default"
               onClick={handleSendNotification}
-              disabled={!notificationText?.trim() || selectedUserTypes?.length === 0}
               iconName="Send"
               iconPosition="left"
             >
               Send Notification
             </Button>
+
           </div>
+
         </div>
+
       </div>
-      {/* Recent Notifications */}
+
       <div className="bg-card border border-border rounded-lg shadow-card">
+
         <div className="p-6 border-b border-border">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-foreground">Recent Notifications</h3>
-            <Button variant="outline" size="sm" iconName="History" iconPosition="left">
-              View All
-            </Button>
-          </div>
+          <h3 className="text-lg font-semibold text-foreground">
+            Recent Notifications
+          </h3>
         </div>
-        <div className="p-6">
-          <div className="space-y-4">
-            {recentNotifications?.map((notification) => (
-              <div key={notification?.id} className="flex items-start space-x-4 p-4 border border-border rounded-lg">
-                <div className="flex-shrink-0 p-2 bg-primary/10 rounded-lg">
-                  <Icon name="Bell" size={20} className="text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-foreground">{notification?.title}</h4>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {notification?.content}
-                  </p>
-                  <div className="flex items-center space-x-4 mt-2 text-xs text-muted-foreground">
-                    <span>Sent to: {notification?.sentTo}</span>
-                    <span>Recipients: {notification?.recipients}</span>
-                    <span>{formatTimestamp(notification?.timestamp)}</span>
-                  </div>
-                </div>
-                <div className="flex-shrink-0">
-                  <span className="px-2 py-1 bg-success/10 text-success text-xs font-medium rounded-full">
-                    {notification?.status}
-                  </span>
-                </div>
+
+        <div className="p-6 space-y-4">
+
+          {recentNotifications?.map((notification) => (
+
+            <div
+              key={notification._id}
+              className="flex items-start space-x-4 p-4 border border-border rounded-lg"
+            >
+
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Icon name="Bell" size={20} className="text-primary" />
               </div>
-            ))}
-          </div>
+
+              <div className="flex-1">
+
+                <h4 className="font-medium text-foreground">
+                  {notification.title}
+                </h4>
+
+                <p className="text-sm text-muted-foreground mt-1">
+                  {notification.message}
+                </p>
+
+                <div className="text-xs text-muted-foreground mt-2">
+                  Recipients: {notification.recipients?.length} • {formatTimestamp(notification.createdAt)}
+                </div>
+
+              </div>
+
+            </div>
+
+          ))}
+
         </div>
+
       </div>
+
     </div>
   );
 };

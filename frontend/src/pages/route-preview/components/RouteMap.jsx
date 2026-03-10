@@ -145,37 +145,41 @@ const RouteMap = ({ selectedRoute, onStopClick, shareLocationEnabled }) => {
     }
   ];
 
-  // Create SVG bus icon
   const createBusSVG = (bus) => {
     const dLng = bus.endLng - bus.startLng;
     const dLat = bus.endLat - bus.startLat;
     const angle = Math.atan2(dLng, dLat) * (180 / Math.PI);
-
+  
     const svg = `
-      <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" style="transform: rotate(${angle}deg)">
+      <svg width="64" height="64" viewBox="0 0 48 48"
+        xmlns="http://www.w3.org/2000/svg"
+        style="transform: rotate(${angle}deg); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));">
+  
         <!-- Bus body -->
-        <rect x="8" y="6" width="32" height="36" rx="4" fill="#ef4444" stroke="#991b1b" stroke-width="2"/>
-        
+        <rect x="8" y="6" width="32" height="36" rx="6"
+          fill="#2563eb" stroke="#1e40af" stroke-width="2"/>
+  
         <!-- Windows -->
-        <rect x="12" y="10" width="6" height="5" fill="#3b82f6" opacity="0.8"/>
-        <rect x="22" y="10" width="6" height="5" fill="#3b82f6" opacity="0.8"/>
-        <rect x="32" y="10" width="6" height="5" fill="#3b82f6" opacity="0.8"/>
-        
-        <!-- Door line -->
-        <line x1="24" y1="18" x2="24" y2="36" stroke="#1f2937" stroke-width="1"/>
-        
-        <!-- Front light -->
-        <circle cx="24" cy="8" r="1.5" fill="#fbbf24"/>
-        
+        <rect x="12" y="10" width="6" height="5" fill="#bfdbfe"/>
+        <rect x="22" y="10" width="6" height="5" fill="#bfdbfe"/>
+        <rect x="32" y="10" width="6" height="5" fill="#bfdbfe"/>
+  
+        <!-- Door -->
+        <line x1="24" y1="18" x2="24" y2="36"
+          stroke="#1f2937" stroke-width="1"/>
+  
+        <!-- Headlight -->
+        <circle cx="24" cy="8" r="2" fill="#fde047"/>
+  
         <!-- Wheels -->
-        <circle cx="14" cy="40" r="3" fill="#1f2937"/>
-        <circle cx="34" cy="40" r="3" fill="#1f2937"/>
-        
-        <!-- Status indicator -->
-        <circle cx="24" cy="4" r="2" fill="#22c55e"/>
+        <circle cx="14" cy="40" r="3.5" fill="#111827"/>
+        <circle cx="34" cy="40" r="3.5" fill="#111827"/>
+  
+        <!-- Live indicator -->
+        <circle cx="24" cy="4" r="3" fill="#22c55e"/>
       </svg>
     `;
-
+  
     return svg;
   };
 
@@ -203,40 +207,117 @@ const RouteMap = ({ selectedRoute, onStopClick, shareLocationEnabled }) => {
   }, []);
 
   // Load initial buses
-  useEffect(() => {
-    setBuses(generateMockBuses());
-  }, []);
+  // useEffect(() => {
+  //   setBuses(generateMockBuses());
+  // }, []);
+
+  // Load buses from backend
+useEffect(() => {
+
+  const fetchBuses = async () => {
+    try {
+
+      const headers = { 'Content-Type': 'application/json' };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(`${API_BASE}/buses`, { headers });
+
+      if (!res.ok) throw new Error('Failed to fetch buses');
+
+      const data = await res.json();
+
+      const backendBuses = (data?.data?.buses || []).map(bus => {
+
+        const coords = bus.currentLocation?.coordinates || [77.4977, 28.7520];
+
+        return {
+          id: bus._id,
+          busNumber: bus.busNumber,
+          currentLat: coords[1],
+          currentLng: coords[0],
+          currentOccupancy: bus.currentOccupancy || 0,
+          capacity: bus.capacity || 45,
+          routeName: "Campus Route",
+          status: bus.currentStatus || "idle"
+        };
+
+      });
+
+      setBuses(backendBuses);
+
+    } catch (err) {
+      console.error("Failed to load buses:", err);
+      setBuses(generateMockBuses()); // fallback if API fails
+    }
+
+  };
+
+  fetchBuses();
+
+}, [token]);
 
   // Animate bus movement
-  useEffect(() => {
-    const animationInterval = setInterval(() => {
-      setBuses(prevBuses => prevBuses.map(bus => {
-        let newProgress = bus.progress + bus.speed;
-        let newDirection = bus.direction;
+  // useEffect(() => {
+  //   const animationInterval = setInterval(() => {
+  //     setBuses(prevBuses => prevBuses.map(bus => {
+  //       let newProgress = bus.progress + bus.speed;
+  //       let newDirection = bus.direction;
 
-        if (newProgress >= 1) {
-          newProgress = 1;
-          newDirection = -1;
-        } else if (newProgress <= 0) {
-          newProgress = 0;
-          newDirection = 1;
-        }
+  //       if (newProgress >= 1) {
+  //         newProgress = 1;
+  //         newDirection = -1;
+  //       } else if (newProgress <= 0) {
+  //         newProgress = 0;
+  //         newDirection = 1;
+  //       }
 
-        const currentLat = bus.startLat + (bus.endLat - bus.startLat) * newProgress;
-        const currentLng = bus.startLng + (bus.endLng - bus.startLng) * newProgress;
+  //       const currentLat = bus.startLat + (bus.endLat - bus.startLat) * newProgress;
+  //       const currentLng = bus.startLng + (bus.endLng - bus.startLng) * newProgress;
+
+  //       return {
+  //         ...bus,
+  //         currentLat,
+  //         currentLng,
+  //         progress: newProgress,
+  //         direction: newDirection
+  //       };
+  //     }));
+  //   }, 50);
+
+  //   return () => clearInterval(animationInterval);
+  // }, []);
+
+
+  // Animate buses smoothly
+useEffect(() => {
+
+  const animationInterval = setInterval(() => {
+
+    setBuses(prevBuses =>
+      prevBuses.map(bus => {
+
+        const speed = 0.00005; // movement speed
+
+        const newLat = bus.currentLat + (Math.random() - 0.5) * speed;
+        const newLng = bus.currentLng + (Math.random() - 0.5) * speed;
 
         return {
           ...bus,
-          currentLat,
-          currentLng,
-          progress: newProgress,
-          direction: newDirection
+          currentLat: newLat,
+          currentLng: newLng
         };
-      }));
-    }, 50);
 
-    return () => clearInterval(animationInterval);
-  }, []);
+      })
+    );
+
+  }, 2000); // update every 2 sec
+
+  return () => clearInterval(animationInterval);
+
+}, []);
 
   // Update bus markers on map
   useEffect(() => {
@@ -250,7 +331,14 @@ const RouteMap = ({ selectedRoute, onStopClick, shareLocationEnabled }) => {
     buses.forEach(bus => {
       const markerEl = document.createElement('div');
       markerEl.innerHTML = createBusSVG(bus);
+      
       markerEl.style.cursor = 'pointer';
+      markerEl.style.width = "64px";
+      markerEl.style.height = "64px";
+      markerEl.style.display = "flex";
+      markerEl.style.alignItems = "center";
+      markerEl.style.justifyContent = "center";
+      markerEl.style.cursor = "pointer";
 
       markerEl.addEventListener('click', () => {
         // Show popup with bus info

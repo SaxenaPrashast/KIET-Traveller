@@ -54,7 +54,7 @@ const busSchema = new mongoose.Schema({
     },
     coordinates: {
       type: [Number], // [longitude, latitude]
-      required: false
+      default: [0, 0]
     }
   },
   currentRoute: {

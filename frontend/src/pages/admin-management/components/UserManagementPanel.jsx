@@ -4,13 +4,19 @@ import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import { useAuth } from '../../../contexts/AuthContext';
 import { API_BASE } from '../../../config/constants';
+import AddUserModal from './AddUserModal';
+import EditUserModal from './EditUserModal';
 
-const UserManagementPanel = ({ refreshSignal, onOpenAddUser }) => {
+const UserManagementPanel = ({ refreshSignal }) => {
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  
+  const [showAddUser, setShowAddUser] = useState(false);
+  const [showEditUser, setShowEditUser] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+
   const { token } = useAuth();
 
   const defaultUsers = [
@@ -20,146 +26,204 @@ const UserManagementPanel = ({ refreshSignal, onOpenAddUser }) => {
       email: "dhruv.jain@kiet.edu",
       role: "student",
       status: "active",
-      lastActive: "2025-09-12T16:30:00Z",
+      lastActive: new Date().toISOString(),
       busRoute: "Route 3",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150"
-    },
-    {
-      id: 2,
-      name: "Dr Sachin Tripathi",
-      email: "sachin.tripathi@kiet.edu",
-      role: "staff",
-      status: "active",
-      lastActive: "2025-09-12T15:45:00Z",
-      busRoute: "Route 1",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150"
-    },
-    {
-      id: 3,
-      name: "Monu",
-      email: "monu@kiet.edu",
-      role: "driver",
-      status: "active",
-      lastActive: "2025-09-12T17:15:00Z",
-      busRoute: "Route 2",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
-    },
-    {
-      id: 4,
-      name: "Emily Davis",
-      email: "emily.davis@kiet.edu",
-      role: "student",
-      status: "offline",
-      lastActive: "2025-09-12T14:20:00Z",
-      busRoute: "Route 4",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150"
+      avatar: "https://i.pravatar.cc/150?img=1"
     }
   ];
 
-  // fetch users from backend (admin only). If fails, fall back to defaultUsers.
   const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      const headers = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      const res = await fetch(`${API_BASE}/users?page=1&limit=50`, { headers });
-      if (!res.ok) throw new Error('Failed to fetch');
+    setLoading(true);
+
+    try {
+
+      const res = await fetch(`${API_BASE}/admin/users?page=1&limit=50`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch users");
+
       const data = await res.json();
-      if (data && data.data && data.data.users) {
-        setUsers(data.data.users);
+
+      if (data.success) {
+
+        const mappedUsers = data.data.users.map(u => ({
+          id: u._id,
+          name: `${u.firstName || ''} ${u.lastName || ''}`,
+          email: u.email,
+          role: u.role,
+          status: u.isActive ? "active" : "offline",
+          lastActive: u.updatedAt || new Date().toISOString(),
+          busRoute: "Not Assigned",
+          avatar: `https://ui-avatars.com/api/?name=${u.firstName}+${u.lastName}`
+        }));
+
+        setUsers(mappedUsers);
+
       } else {
         setUsers(defaultUsers);
       }
+
     } catch (err) {
+
+      console.error("User fetch error:", err);
       setUsers(defaultUsers);
+
     } finally {
       setLoading(false);
     }
+
   };
 
   useEffect(() => {
     fetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // support refreshSignal prop for parent to request a reload
-  // parent can pass `refreshSignal` which increments when new user is added
   useEffect(() => {
-    if (typeof refreshSignal !== 'undefined') {
+    if (refreshSignal !== undefined) {
       fetchUsers();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [typeof refreshSignal !== 'undefined' ? refreshSignal : null]);
+  }, [refreshSignal]);
 
   const getRoleColor = (role) => {
     switch (role) {
-      case 'admin':
-        return 'bg-error/10 text-error';
-      case 'driver':
-        return 'bg-warning/10 text-warning';
-      case 'staff':
-        return 'bg-primary/10 text-primary';
-      default:
-        return 'bg-success/10 text-success';
+      case 'admin': return 'bg-error/10 text-error';
+      case 'driver': return 'bg-warning/10 text-warning';
+      case 'staff': return 'bg-primary/10 text-primary';
+      default: return 'bg-success/10 text-success';
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'active':
-        return 'bg-success/10 text-success';
-      case 'pending':
-        return 'bg-warning/10 text-warning';
-      case 'suspended':
-        return 'bg-error/10 text-error';
-      default:
-        return 'bg-muted/10 text-muted-foreground';
+      case 'active': return 'bg-success/10 text-success';
+      case 'pending': return 'bg-warning/10 text-warning';
+      case 'suspended': return 'bg-error/10 text-error';
+      default: return 'bg-muted/10 text-muted-foreground';
     }
   };
 
-  const filteredUsers = users?.filter(user => {
-    const matchesSearch = user?.name?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
-                         user?.email?.toLowerCase()?.includes(searchTerm?.toLowerCase());
-    const matchesRole = selectedRole === 'all' || user?.role === selectedRole;
+  const filteredUsers = users.filter(user => {
+
+    const matchesSearch =
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesRole =
+      selectedRole === 'all' || user.role === selectedRole;
+
     return matchesSearch && matchesRole;
+
   });
 
   const formatLastActive = (timestamp) => {
+
     const date = new Date(timestamp);
     const now = new Date();
-    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
-    
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes}m ago`;
-    } else if (diffInMinutes < 1440) {
-      return `${Math.floor(diffInMinutes / 60)}h ago`;
-    } else {
-      return date?.toLocaleDateString();
-    }
+    const diff = Math.floor((now - date) / (1000 * 60));
+
+    if (diff < 60) return `${diff}m ago`;
+    if (diff < 1440) return `${Math.floor(diff / 60)}h ago`;
+
+    return date.toLocaleDateString();
   };
 
+
+// DELETE USER
+const deleteUser = async (userId) => {
+
+  if (!window.confirm("Deactivate this user?")) return;
+
+  try {
+
+    await fetch(`${API_BASE}/users/${userId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    fetchUsers();
+
+  } catch (err) {
+
+    console.error("Delete user error:", err);
+
+  }
+
+};
+
+
+// ACTIVATE / SUSPEND USER
+const toggleUserStatus = async (user) => {
+
+  try {
+
+    await fetch(`${API_BASE}/users/${user.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        isActive: user.status !== "active"
+      })
+    });
+
+    fetchUsers();
+
+  } catch (err) {
+
+    console.error("Status update error:", err);
+
+  }
+
+};
+
   return (
+
     <div className="bg-card border border-border rounded-lg shadow-card">
+
       <div className="p-6 border-b border-border">
+
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-foreground">User Management</h3>
-          <Button variant="default" iconName="UserPlus" iconPosition="left" size="sm" onClick={() => onOpenAddUser && onOpenAddUser()}>
+
+          <h3 className="text-lg font-semibold text-foreground">
+            User Management
+          </h3>
+
+          <Button
+            variant="default"
+            iconName="UserPlus"
+            iconPosition="left"
+            size="sm"
+            onClick={() => setShowAddUser(true)}
+          >
             Add User
           </Button>
+
         </div>
-        
+
         <div className="flex flex-col sm:flex-row gap-4">
+
           <div className="flex-1">
+
             <Input
               type="search"
               placeholder="Search users..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e?.target?.value)}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
+
           </div>
+
           <div className="flex gap-2">
-            {['all', 'student', 'staff', 'driver', 'admin']?.map((role) => (
+
+            {['all', 'student', 'staff', 'driver', 'admin'].map(role => (
+
               <Button
                 key={role}
                 variant={selectedRole === role ? 'default' : 'outline'}
@@ -169,60 +233,134 @@ const UserManagementPanel = ({ refreshSignal, onOpenAddUser }) => {
               >
                 {role}
               </Button>
+
             ))}
+
           </div>
+
         </div>
+
       </div>
+
       <div className="p-6">
+
+        {loading && (
+          <p className="text-center text-muted-foreground">
+            Loading users...
+          </p>
+        )}
+
         <div className="space-y-4">
-          {filteredUsers?.map((user) => (
-            <div key={user?.id} className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-smooth">
+
+          {filteredUsers.map(user => (
+
+            <div
+              key={user.id}
+              className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50"
+            >
+
               <div className="flex items-center space-x-4">
-                <div className="relative">
-                  <img
-                    src={user?.avatar}
-                    alt={user?.name}
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-card ${
-                    user?.status === 'active' ? 'bg-success' : 'bg-muted-foreground'
-                  }`} />
-                </div>
+
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className="w-12 h-12 rounded-full"
+                />
+
                 <div>
-                  <h4 className="font-medium text-foreground">{user?.name}</h4>
-                  <p className="text-sm text-muted-foreground">{user?.email}</p>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user?.role)}`}>
-                      {user?.role}
-                    </span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user?.status)}`}>
-                      {user?.status}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-foreground">{user?.busRoute}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Active {formatLastActive(user?.lastActive)}
+
+                  <h4 className="font-medium text-foreground">
+                    {user.name}
+                  </h4>
+
+                  <p className="text-sm text-muted-foreground">
+                    {user.email}
                   </p>
+
+                  <div className="flex gap-2 mt-1">
+
+                    <span className={`px-2 py-1 text-xs rounded-full ${getRoleColor(user.role)}`}>
+                      {user.role}
+                    </span>
+
+                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(user.status)}`}>
+                      {user.status}
+                    </span>
+
+                  </div>
+
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Button variant="ghost" size="icon">
+
+              </div>
+
+              <div className="flex items-center space-x-4">
+
+                <div className="text-right hidden sm:block">
+
+                  <p className="text-sm text-foreground">
+                    {user.busRoute}
+                  </p>
+
+                  <p className="text-xs text-muted-foreground">
+                    Active {formatLastActive(user.lastActive)}
+                  </p>
+
+                </div>
+
+                 {/* Edit button  */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setSelectedUser(user);
+                      setShowEditUser(true);
+                    }}
+                  >
                     <Icon name="Edit" size={16} />
                   </Button>
-                  <Button variant="ghost" size="icon">
-                    <Icon name="MoreVertical" size={16} />
+
+                  {/* Activate / Suspend */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => toggleUserStatus(user)}
+                  >
+                    <Icon name="UserX" size={16} />
                   </Button>
-                </div>
+
+                  {/* Deactivate */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => deleteUser(user.id)}
+                  >
+                    <Icon name="Trash" size={16} />
+                  </Button>
+
               </div>
+
             </div>
+
           ))}
+
         </div>
+
       </div>
+
+      <AddUserModal
+        open={showAddUser}
+        onClose={() => setShowAddUser(false)}
+        onUserAdded={fetchUsers}
+      />
+      <EditUserModal
+        open={showEditUser}
+        user={selectedUser}
+        onClose={() => setShowEditUser(false)}
+        onUserUpdated={fetchUsers}
+      />
+
     </div>
+
   );
 };
 

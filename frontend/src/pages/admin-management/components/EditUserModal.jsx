@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
 import { API_BASE } from "../../../config/constants";
 import { useAuth } from "../../../contexts/AuthContext";
 
-const AddUserModal = ({ open, onClose, onUserAdded }) => {
+const EditUserModal = ({ open, onClose, user, onUserUpdated }) => {
 
   const { token } = useAuth();
 
@@ -13,10 +13,22 @@ const AddUserModal = ({ open, onClose, onUserAdded }) => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    email: "",
-    password: "",
-    role: "student"
+    phone: ""
   });
+
+  useEffect(() => {
+
+    if (user) {
+
+      setFormData({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        phone: user.phone || ""
+      });
+
+    }
+
+  }, [user]);
 
   const handleChange = (e) => {
 
@@ -35,8 +47,8 @@ const AddUserModal = ({ open, onClose, onUserAdded }) => {
 
     try {
 
-      const res = await fetch(`${API_BASE}/auth/register`, {
-        method: "POST",
+      const res = await fetch(`${API_BASE}/users/${user.id}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
@@ -48,30 +60,24 @@ const AddUserModal = ({ open, onClose, onUserAdded }) => {
 
       if (!res.ok) throw new Error(data.message);
 
-      if (onUserAdded) onUserAdded();
+      if (onUserUpdated) onUserUpdated();
 
       onClose();
 
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        password: "",
-        role: "student"
-      });
-
     } catch (err) {
 
-      console.error("Add user error:", err);
-      alert("Failed to create user");
+      console.error("Edit user error:", err);
+      alert("Failed to update user");
 
     } finally {
+
       setLoading(false);
+
     }
 
   };
 
-  if (!open) return null;
+  if (!open || !user) return null;
 
   return (
 
@@ -80,7 +86,7 @@ const AddUserModal = ({ open, onClose, onUserAdded }) => {
       <div className="bg-card border border-border rounded-lg w-full max-w-md p-6">
 
         <h2 className="text-lg font-semibold text-foreground mb-4">
-          Add New User
+          Edit User
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -90,7 +96,6 @@ const AddUserModal = ({ open, onClose, onUserAdded }) => {
             name="firstName"
             value={formData.firstName}
             onChange={handleChange}
-            required
           />
 
           <Input
@@ -98,50 +103,14 @@ const AddUserModal = ({ open, onClose, onUserAdded }) => {
             name="lastName"
             value={formData.lastName}
             onChange={handleChange}
-            required
           />
 
           <Input
-            label="Email"
-            name="email"
-            type="email"
-            value={formData.email}
+            label="Phone"
+            name="phone"
+            value={formData.phone}
             onChange={handleChange}
-            required
           />
-
-          <Input
-            label="Password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-
-          {/* Role Selector */}
-
-          <div>
-
-            <label className="text-sm text-muted-foreground">
-              Role
-            </label>
-
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              className="w-full mt-1 p-2 bg-background border border-border rounded-md"
-            >
-
-              <option value="student">Student</option>
-              <option value="staff">Staff</option>
-              <option value="driver">Driver</option>
-              <option value="admin">Admin</option>
-
-            </select>
-
-          </div>
 
           <div className="flex justify-end space-x-2 pt-4">
 
@@ -150,7 +119,7 @@ const AddUserModal = ({ open, onClose, onUserAdded }) => {
             </Button>
 
             <Button type="submit" loading={loading}>
-              Create User
+              Save Changes
             </Button>
 
           </div>
@@ -165,4 +134,4 @@ const AddUserModal = ({ open, onClose, onUserAdded }) => {
 
 };
 
-export default AddUserModal;
+export default EditUserModal;

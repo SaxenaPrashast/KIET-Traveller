@@ -201,44 +201,75 @@ router.delete('/:id', validateObjectId(), authorize('admin'), asyncHandler(async
 // @desc    Add stop to route
 // @route   POST /api/routes/:id/stops
 // @access  Private (Admin only)
+const axios = require("axios");
+
 router.post('/:id/stops', validateObjectId(), authorize('admin'), asyncHandler(async (req, res) => {
-  const { name, description, latitude, longitude, address, estimatedTime } = req.body;
+
+  const { name, address, estimatedTime } = req.body;
   const routeId = req.params.id;
 
-  if (!name || !latitude || !longitude) {
+  if (!name || !address) {
     return res.status(400).json({
       success: false,
-      message: 'Name, latitude, and longitude are required'
+      message: "Stop name and address are required"
     });
   }
 
   const route = await Route.findById(routeId);
+
   if (!route) {
     return res.status(404).json({
       success: false,
-      message: 'Route not found'
+      message: "Route not found"
     });
   }
 
+  // 🔹 Convert address → coordinates using OpenStreetMap
+  const geoResponse = await axios.get(
+    `https://nominatim.openstreetmap.org/search`,
+    {
+      params: {
+        q: address,
+        format: "json",
+        limit: 1
+      },
+      headers: {
+        "User-Agent": "KIET-Traveller-App"
+      }
+    }
+  );
+
+  if (!geoResponse.data.length) {
+    return res.status(400).json({
+      success: false,
+      message: "Address not found"
+    });
+  }
+
+  const latitude = parseFloat(geoResponse.data[0].lat);
+  const longitude = parseFloat(geoResponse.data[0].lon);
+
   const stopData = {
     name,
-    description,
+    address,
     location: {
       type: 'Point',
-      coordinates: [parseFloat(longitude), parseFloat(latitude)]
+      coordinates: [longitude, latitude]
     },
-    address,
     estimatedTime: estimatedTime || 0,
     sequence: route.stops.length
   };
 
-  await route.addStop(stopData);
+  route.stops.push(stopData);
+
+  await route.save();
 
   res.json({
     success: true,
-    message: 'Stop added successfully',
+    message: "Stop added successfully",
     data: { route }
   });
+
 }));
 
 // @desc    Remove stop from route
@@ -326,10 +357,9 @@ router.put('/:id/assign-bus', validateObjectId(), authorize('admin'), asyncHandl
   }
 
   // Add bus to route's assigned buses
-  if (!route.assignedBuses.includes(busId)) {
-    route.assignedBuses.push(busId);
+  route.assignedBuses = [busId];
     await route.save();
-  }
+  
 
   res.json({
     success: true,

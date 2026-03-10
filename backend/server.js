@@ -10,8 +10,6 @@ const { Server } = require('socket.io');
 const path = require('path');
 const fs = require('fs');
 
-// Load .env from backend folder and override existing env values if necessary
-// (useful during local development when an empty env var may be set in the environment)
 const envPath = path.resolve(__dirname, '.env');
 console.log('Loading .env from:', envPath);
 console.log('.env file exists:', fs.existsSync(envPath));
@@ -27,7 +25,6 @@ if (dotenvResult.error) {
   }
 }
 
-// Log presence of the variable (don't print secrets)
 console.log('MONGODB_URI in process.env:', Boolean(process.env.MONGODB_URI));
 if (process.env.MONGODB_URI) {
   console.log('Connection string starts with:', process.env.MONGODB_URI.substring(0, 20) + '...');
@@ -88,7 +85,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'OK',
@@ -122,14 +118,15 @@ app.use('*', (req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
-// Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/kiet_traveller')
 .then(() => {
   console.log('✅ Connected to MongoDB');
+
+  console.log("DB NAME:", mongoose.connection.name);
+  console.log("DB HOST:", mongoose.connection.host);
 })
 .catch((error) => {
   console.error('❌ MongoDB connection error:', error);
-  process.exit(1);
 });
 
 // Graceful shutdown

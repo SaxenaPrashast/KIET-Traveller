@@ -100,18 +100,48 @@ router.get('/:id', validateObjectId(), authenticateToken, asyncHandler(async (re
 // @desc    Create notification
 // @route   POST /api/notifications
 // @access  Private (Admin only)
-router.post('/', authorize('admin'), validateNotification, asyncHandler(async (req, res) => {
-  const notificationData = req.body;
-  notificationData.createdBy = req.user._id;
+router.post('/', authenticateToken, authorize('admin'), asyncHandler(async (req, res) => {
 
-  const notification = await Notification.create(notificationData);
-
-  res.status(201).json({
-    success: true,
-    message: 'Notification created successfully',
-    data: { notification }
+  const { title, message, type, priority, targetRoles } = req.body;
+  
+  if(!title || !message){
+  return res.status(400).json({
+  success:false,
+  message:"Title and message are required"
   });
-}));
+  }
+  
+  let recipients = [];
+  
+  if(targetRoles && targetRoles.length > 0){
+  
+  const users = await User.find({
+  role: { $in: targetRoles },
+  isActive: true
+  }).select("_id");
+  
+  recipients = users.map(u => u._id);
+  
+  }
+  
+  const notification = await Notification.create({
+  title,
+  message,
+  type: type || "info",
+  priority: priority || "medium",
+  targetRoles,
+  recipients,
+  createdBy: req.user._id,
+  status: "sent"
+  });
+  
+  res.status(201).json({
+  success:true,
+  message:"Notification sent successfully",
+  data:{ notification }
+  });
+  
+  }));
 
 // @desc    Update notification
 // @route   PUT /api/notifications/:id

@@ -49,9 +49,9 @@ const Header = () => {
     { path: user?.role === 'driver' ? '/driver-dashboard' : null, label: 'Driver Portal', icon: 'Truck', isDriver: user?.role === 'driver' },
   ].filter(item => item.path !== null);
 
-  const secondaryItems = [
-    { path: '/admin-management', label: 'Admin', icon: 'Settings' },
-  ];
+  // const secondaryItems = [
+  //   { path: '/admin-management', label: 'Admin', icon: 'Settings' },
+  // ];
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -109,7 +109,7 @@ const Header = () => {
           ))}
 
           {/* Secondary Navigation */}
-          {user?.role === 'admin' && secondaryItems?.map((item) => (
+          {/* {user?.role === 'admin' && secondaryItems?.map((item) => (
             <Button
               key={item?.path}
               variant={isActive(item?.path) ? 'default' : 'ghost'}
@@ -122,11 +122,11 @@ const Header = () => {
             >
               {item?.label}
             </Button>
-          ))}
+          ))} */}
 
           {/* Notification Bell */}
           <div className="relative ml-2 border-l border-border pl-2">
-            <Button
+            {/* <Button
               variant="ghost"
               size="icon"
               onClick={() => setNotificationOpen(!notificationOpen)}
@@ -138,7 +138,7 @@ const Header = () => {
                   {unreadCount}
                 </span>
               )}
-            </Button>
+            </Button> */}
 
             {/* Notification Dropdown */}
             {notificationOpen && (
@@ -301,7 +301,7 @@ const Header = () => {
               )
             ))}
             
-            {user?.role === 'admin' && (
+            {/* {user?.role === 'admin' && (
               <>
                 <hr className="my-3 border-border" />
                 {secondaryItems?.map((item) => (
@@ -315,7 +315,7 @@ const Header = () => {
                   </button>
                 ))}
               </>
-            )}
+            )} */}
             
             <div className="mt-3 pt-3 border-t border-border space-y-2">
               <button
