@@ -1,6 +1,7 @@
 const express = require('express');
 const Route = require('../models/Route');
 const Bus = require('../models/Bus');
+const User = require('../models/User');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { authorize, canAccessResource } = require('../middleware/auth');
 const { validateRoute, validateObjectId, validatePagination, validateLocation } = require('../middleware/validation');
@@ -44,12 +45,46 @@ router.get('/', validatePagination, asyncHandler(async (req, res) => {
     .skip(skip)
     .limit(limit);
 
+  const assignedBusIds = routes.flatMap(route =>
+    (route.assignedBuses || []).map(bus => bus._id)
+  );
+
+  const studentAssignments = assignedBusIds.length > 0
+    ? await User.aggregate([
+        {
+          $match: {
+            role: 'student',
+            isActive: true,
+            assignedBus: { $in: assignedBusIds }
+          }
+        },
+        {
+          $group: {
+            _id: '$assignedBus',
+            count: { $sum: 1 }
+          }
+        }
+      ])
+    : [];
+
+  const studentCountByBus = new Map(
+    studentAssignments.map(item => [item._id.toString(), item.count])
+  );
+
+  const routesWithStudentCounts = routes.map(route => {
+    const routeObject = route.toObject();
+    routeObject.activeStudentsCount = (route.assignedBuses || []).reduce((total, bus) => {
+      return total + (studentCountByBus.get(bus._id.toString()) || 0);
+    }, 0);
+    return routeObject;
+  });
+
   const total = await Route.countDocuments(query);
 
   res.json({
     success: true,
     data: {
-      routes,
+      routes: routesWithStudentCounts,
       pagination: {
         page,
         limit,

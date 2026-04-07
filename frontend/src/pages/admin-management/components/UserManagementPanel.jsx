@@ -24,10 +24,14 @@ const UserManagementPanel = ({ refreshSignal }) => {
       id: 1,
       name: "Dhruv Jain",
       email: "dhruv.jain@kiet.edu",
+      firstName: "Dhruv",
+      lastName: "Jain",
+      phone: "",
       role: "student",
       status: "active",
       lastActive: new Date().toISOString(),
       busRoute: "Route 3",
+      assignedBus: null,
       avatar: "https://i.pravatar.cc/150?img=1"
     }
   ];
@@ -53,11 +57,15 @@ const UserManagementPanel = ({ refreshSignal }) => {
         const mappedUsers = data.data.users.map(u => ({
           id: u._id,
           name: `${u.firstName || ''} ${u.lastName || ''}`,
+          firstName: u.firstName || "",
+          lastName: u.lastName || "",
           email: u.email,
+          phone: u.phone || "",
           role: u.role,
           status: u.isActive ? "active" : "offline",
           lastActive: u.updatedAt || new Date().toISOString(),
-          busRoute: "Not Assigned",
+          busRoute: u.assignedBus?.busNumber || "Not Assigned",
+          assignedBus: u.assignedBus || null,
           avatar: `https://ui-avatars.com/api/?name=${u.firstName}+${u.lastName}`
         }));
 

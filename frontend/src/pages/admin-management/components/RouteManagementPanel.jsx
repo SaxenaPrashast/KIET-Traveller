@@ -60,7 +60,7 @@ const RouteManagementPanel = ({ refreshSignal, onOpenAddRoute }) => {
           driver: "Not Assigned",
           busNumber: route.assignedBuses?.[0]?.busNumber || "Not Assigned",
           totalStops: route.stops ? route.stops.length : 0,
-          activeStudents: 0,
+          activeStudents: route.activeStudentsCount ?? 0,
           lastUpdate: route.updatedAt || new Date().toISOString(),
           estimatedTime: route.estimatedTime ? `${route.estimatedTime} min` : "N/A",
           currentLocation: "Unknown"

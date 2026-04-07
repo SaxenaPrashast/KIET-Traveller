@@ -17,10 +17,30 @@ router.get('/', authenticateToken, validatePagination, asyncHandler(async (req, 
   const type = req.query.type;
   const priority = req.query.priority;
   const isRead = req.query.isRead;
+  const now = new Date();
+  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+  await Notification.updateMany(
+    {
+      isActive: true,
+      $or: [
+        { expiresAt: { $lt: now } },
+        {
+          expiresAt: null,
+          createdAt: { $lt: oneDayAgo }
+        }
+      ]
+    },
+    { $set: { isActive: false } }
+  );
 
   let query = {
     recipients: req.user._id,
-    isActive: true
+    isActive: true,
+    $or: [
+      { expiresAt: null, createdAt: { $gte: oneDayAgo } },
+      { expiresAt: { $gte: now } }
+    ]
   };
 
   if (type) {
@@ -102,7 +122,7 @@ router.get('/:id', validateObjectId(), authenticateToken, asyncHandler(async (re
 // @access  Private (Admin only)
 router.post('/', authenticateToken, authorize('admin'), asyncHandler(async (req, res) => {
 
-  const { title, message, type, priority, targetRoles } = req.body;
+  const { title, message, type, priority, targetRoles, expiresAt } = req.body;
   
   if(!title || !message){
   return res.status(400).json({
@@ -132,7 +152,8 @@ router.post('/', authenticateToken, authorize('admin'), asyncHandler(async (req,
   targetRoles,
   recipients,
   createdBy: req.user._id,
-  status: "sent"
+  status: "sent",
+  expiresAt: expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000)
   });
   
   res.status(201).json({

@@ -2,43 +2,67 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import Header from '../../components/ui/Header';
-import LogoutButton from '../../components/LogoutButton';
+
 import LiveBusTrackingCard from './components/LiveBusTrackingCard';
-import QuickActionsSection from './components/QuickActionsSection';
 import UpcomingScheduleCard from './components/UpcomingScheduleCard';
-import PeerCoordinationSection from './components/PeerCoordinationSection';
-import ChatbotWidget from './components/ChatbotWidget';
 import Announcements from './components/Announcements';
+import MyTransportCard from './components/MyTransportCard';
+import DashboardStats from './components/DashboardStats';
 
 const StudentDashboard = () => {
   const { user, token } = useAuth();
-  const [buses, setBuses] = useState([]);
-  console.log("Buses state:", buses);
+
+  const [liveBuses, setLiveBuses] = useState([]);
+  const [schedules, setSchedules] = useState([]);
+  const [currentUser, setCurrentUser] = useState(user);
+  const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState(null); // ✅ STEP 8
+
   useEffect(() => {
-    const fetchBuses = async () => {
+    let interval;
+
+    const fetchDashboardData = async () => {
       try {
-  
-        const res = await axios.get(
-          "http://localhost:5000/api/buses",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
-        );
-  
-        console.log("Buses API response:", res.data);
-  
-        setBuses(res.data.data.buses);
-  
-      } catch (error) {
-        console.error("Error fetching buses:", error);
+        const userRes = await axios.get("http://localhost:5000/api/auth/me", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const freshUser = userRes.data.data.user;
+        const assignedBusId = freshUser?.assignedBus?._id || freshUser?.assignedBus;
+        const today = new Date();
+        const todayString = today.toISOString().split("T")[0];
+
+        const [busRes, scheduleRes] = await Promise.all([
+          axios.get("http://localhost:5000/api/tracking/live", {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`http://localhost:5000/api/schedules?startDate=${todayString}${assignedBusId ? `&bus=${assignedBusId}` : ""}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
+
+        setCurrentUser(freshUser);
+        setLiveBuses(busRes.data.data.buses || []);
+        setSchedules(scheduleRes.data.data.schedules || []);
+
+        setLastUpdated(new Date()); // ✅ STEP 8
+
+      } catch (err) {
+        console.error("Dashboard error:", err);
+      } finally {
+        setLoading(false);
       }
     };
-  
+
     if (token) {
-      fetchBuses();
+      fetchDashboardData();
+
+      // 🔥 auto refresh
+      interval = setInterval(fetchDashboardData, 5000);
     }
+
+    return () => clearInterval(interval);
+
   }, [token]);
 
   return (
@@ -46,107 +70,78 @@ const StudentDashboard = () => {
       <Header />
 
       <main className="pt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-7xl mx-auto p-6">
 
-          {/* Welcome Section */}
-          <div className="mb-8">
-            <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg p-6 border border-border">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h1 className="text-2xl font-bold text-foreground mb-2">
-                    Welcome back, {user?.firstName || 'Student'}!
-                  </h1>
-                  <p className="text-muted-foreground">
-                    Track your buses, coordinate with peers, and stay updated with real-time transportation information.
-                  </p>
-                </div>
-              </div>
+          {/* Welcome */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold">
+              Welcome back, {user?.firstName}
+              <DashboardStats />
+            </h1>
 
-              <div className="mt-4 flex items-center space-x-4 text-sm">
-                <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-success rounded-full"></div>
-                  <span className="text-muted-foreground">
-                    {buses.length} buses active
-                  </span>
-                </div>
+            <p className="text-muted-foreground">
+              Real-time campus transport dashboard
+            </p>
 
-                <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span className="text-muted-foreground">
-                    Live tracking enabled
-                  </span>
-                </div>
-
-                <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-warning rounded-full"></div>
-                  <span className="text-muted-foreground">
-                    2 route updates
-                  </span>
-                </div>
-              </div>
-            </div>
+            {/* ✅ STEP 8: LAST UPDATED */}
+            {lastUpdated && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Last updated: {lastUpdated.toLocaleTimeString()}
+              </p>
+            )}
           </div>
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {loading ? (
+            <p>Loading...</p>
+          ) : (
+            <div className="grid lg:grid-cols-3 gap-6">
 
-            {/* LEFT COLUMN */}
-            <div className="lg:col-span-2 space-y-6">
-              <LiveBusTrackingCard buses={buses} />
-              <UpcomingScheduleCard />
+              {/* LEFT */}
+              <div className="lg:col-span-2 space-y-6">
 
-              {/* Emergency Contact */}
-              <div className="max-w-sm">
-                <QuickActionsSection />
-              </div>
-            </div>
-
-            {/* RIGHT COLUMN */}
-            <div className="space-y-6">
-              <Announcements />
-              <PeerCoordinationSection />
-            </div>
-
-          </div>
-
-          {/* Mobile Stats Section */}
-          <div className="mt-8 lg:hidden">
-            <div className="bg-card border border-border rounded-lg p-4">
-              <h3 className="font-semibold text-foreground mb-3">Quick Stats</h3>
-              <div className="grid grid-cols-3 gap-4 text-center">
-
-                <div>
-                  <div className="text-2xl font-bold text-primary">
-                    {buses.length}
+                {/* 🚍 Live Bus */}
+                {liveBuses.length === 0 ? (
+                  <div className="bg-card border border-border rounded-lg p-6 text-center">
+                    <p className="text-muted-foreground">
+                      No active buses right now
+                    </p>
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    Active Buses
-                  </div>
-                </div>
+                ) : (
+                  <LiveBusTrackingCard bus={liveBuses[0]} />
+                )}
 
-                <div>
-                  <div className="text-2xl font-bold text-success">5</div>
-                  <div className="text-xs text-muted-foreground">
-                    Routes Available
+                {/* 📅 Schedule */}
+                {schedules.length === 0 ? (
+                  <div className="bg-card border border-border rounded-lg p-6 text-center">
+                    <p className="text-muted-foreground">
+                      No schedules available (Admin not added yet)
+                    </p>
                   </div>
-                </div>
-
-                <div>
-                  <div className="text-2xl font-bold text-warning">2</div>
-                  <div className="text-xs text-muted-foreground">
-                    Notifications
-                  </div>
-                </div>
+                ) : (
+                  <UpcomingScheduleCard schedules={schedules} />
+                )}
 
               </div>
-            </div>
-          </div>
 
+              {/* RIGHT */}
+              <div className="space-y-6">
+
+                {/* 🧠 Smart Card */}
+                <MyTransportCard 
+                  user={currentUser}
+                  buses={liveBuses} 
+                  schedules={schedules} 
+                />
+
+                {/* 📢 Announcements */}
+                <Announcements />
+
+              </div>
+
+            </div>
+          )}
         </div>
       </main>
-
-      {/* Chatbot */}
-      <ChatbotWidget />
     </div>
   );
 };

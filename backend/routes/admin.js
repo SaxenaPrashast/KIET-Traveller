@@ -371,6 +371,7 @@ router.get('/users', validatePagination, asyncHandler(async (req, res) => {
 
   const users = await User.find(query)
     .select('-password')
+    .populate('assignedBus', 'busNumber registrationNumber status')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);

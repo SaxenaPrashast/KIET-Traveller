@@ -59,19 +59,26 @@ const io = new Server(server, {
 });
 
 // Rate limiting
+const isProduction = process.env.NODE_ENV === 'production';
+
 const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // limit each IP to 100 requests per windowMs
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
   message: {
     error: 'Too many requests from this IP, please try again later.'
   }
 });
 
+if (isProduction) {
+  app.use(limiter);
+}
+
+
 // Middleware
 app.use(helmet());
 app.use(compression());
 app.use(morgan('combined'));
-app.use(limiter);
+// app.use(limiter);
 app.use(cors({
   origin: process.env.FRONTEND_URL || "http://localhost:4028",
   credentials: true

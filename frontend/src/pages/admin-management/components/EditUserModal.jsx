@@ -9,11 +9,13 @@ const EditUserModal = ({ open, onClose, user, onUserUpdated }) => {
   const { token } = useAuth();
 
   const [loading, setLoading] = useState(false);
+  const [buses, setBuses] = useState([]);
 
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    phone: ""
+    phone: "",
+    assignedBus: ""
   });
 
   useEffect(() => {
@@ -23,12 +25,39 @@ const EditUserModal = ({ open, onClose, user, onUserUpdated }) => {
       setFormData({
         firstName: user.firstName || "",
         lastName: user.lastName || "",
-        phone: user.phone || ""
+        phone: user.phone || "",
+        assignedBus: user.assignedBus?._id || ""
       });
 
     }
 
   }, [user]);
+
+  useEffect(() => {
+
+    const fetchBuses = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/buses?page=1&limit=100`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          setBuses(data.data.buses || []);
+        }
+      } catch (err) {
+        console.error("Bus fetch error:", err);
+      }
+    };
+
+    if (open && token) {
+      fetchBuses();
+    }
+
+  }, [open, token]);
 
   const handleChange = (e) => {
 
@@ -111,6 +140,26 @@ const EditUserModal = ({ open, onClose, user, onUserUpdated }) => {
             value={formData.phone}
             onChange={handleChange}
           />
+
+          <div>
+            <label className="text-sm text-muted-foreground">
+              Assigned Bus
+            </label>
+
+            <select
+              name="assignedBus"
+              value={formData.assignedBus}
+              onChange={handleChange}
+              className="w-full mt-1 p-2 bg-background border border-border rounded-md"
+            >
+              <option value="">Not Assigned</option>
+              {buses.map(bus => (
+                <option key={bus._id} value={bus._id}>
+                  {bus.busNumber} ({bus.registrationNumber})
+                </option>
+              ))}
+            </select>
+          </div>
 
           <div className="flex justify-end space-x-2 pt-4">
 
