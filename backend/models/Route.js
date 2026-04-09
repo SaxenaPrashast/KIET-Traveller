@@ -180,7 +180,7 @@ routeSchema.index({ isPopular: 1 });
 
 // Virtual for total stops
 routeSchema.virtual('totalStops').get(function() {
-  return this.stops.length;
+  return Array.isArray(this.stops) ? this.stops.length : 0;
 });
 
 // Virtual for route status

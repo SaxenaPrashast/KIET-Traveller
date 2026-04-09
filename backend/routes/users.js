@@ -1,5 +1,6 @@
 const express = require('express');
 const User = require('../models/User');
+const Bus = require('../models/Bus');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { authorize, canAccessResource } = require('../middleware/auth');
 const { validateObjectId, validatePagination, validateSearch } = require('../middleware/validation');
@@ -40,6 +41,7 @@ router.get('/', authorize('admin'), validatePagination, asyncHandler(async (req,
 
   const users = await User.find(query)
     .select('-password')
+    .populate('assignedBus', 'busNumber registrationNumber status')
     .sort(sortObj)
     .skip(skip)
     .limit(limit);
@@ -64,7 +66,9 @@ router.get('/', authorize('admin'), validatePagination, asyncHandler(async (req,
 // @route   GET /api/users/:id
 // @access  Private
 router.get('/:id', validateObjectId(), canAccessResource('user'), asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id).select('-password');
+  const user = await User.findById(req.params.id)
+    .select('-password')
+    .populate('assignedBus', 'busNumber registrationNumber status');
   
   if (!user) {
     return res.status(404).json({
@@ -83,9 +87,17 @@ router.get('/:id', validateObjectId(), canAccessResource('user'), asyncHandler(a
 // @route   PUT /api/users/:id
 // @access  Private
 router.put('/:id', validateObjectId(), canAccessResource('user'), asyncHandler(async (req, res) => {
-  const { firstName, lastName, phone, preferences, isActive } = req.body;
+  const { firstName, lastName, phone, preferences, isActive, assignedBus } = req.body;
   const userId = req.params.id;
   const currentUser = req.user;
+  const targetUser = await User.findById(userId);
+
+  if (!targetUser) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found'
+    });
+  }
 
   // Only admin can update isActive status
   const updateData = {};
@@ -98,18 +110,30 @@ router.put('/:id', validateObjectId(), canAccessResource('user'), asyncHandler(a
     updateData.isActive = isActive;
   }
 
+  if (currentUser.role === 'admin' && assignedBus !== undefined) {
+    if (assignedBus === '' || assignedBus === null) {
+      updateData.assignedBus = null;
+    } else {
+      const bus = await Bus.findById(assignedBus);
+
+      if (!bus) {
+        return res.status(404).json({
+          success: false,
+          message: 'Bus not found'
+        });
+      }
+
+      updateData.assignedBus = assignedBus;
+    }
+  }
+
   const user = await User.findByIdAndUpdate(
     userId,
     updateData,
     { new: true, runValidators: true }
-  ).select('-password');
-
-  if (!user) {
-    return res.status(404).json({
-      success: false,
-      message: 'User not found'
-    });
-  }
+  )
+    .select('-password')
+    .populate('assignedBus', 'busNumber registrationNumber status');
 
   res.json({
     success: true,

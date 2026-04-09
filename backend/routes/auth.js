@@ -209,10 +209,14 @@ router.post('/logout', authenticateToken, asyncHandler(async (req, res) => {
 // @route   GET /api/auth/me
 // @access  Private
 router.get('/me', authenticateToken, asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id)
+    .select('-password')
+    .populate('assignedBus', 'busNumber registrationNumber status currentSpeed currentStatus currentRoute');
+
   res.json({
     success: true,
     data: {
-      user: req.user.getPublicProfile()
+      user: user.getPublicProfile()
     }
   });
 }));

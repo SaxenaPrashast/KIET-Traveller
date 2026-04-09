@@ -8,6 +8,7 @@ import Icon from '../../components/AppIcon';
 import { useAuth } from '../../contexts/AuthContext';
 import { API_BASE } from '../../config/constants';
 import BusManagementPanel from './components/BusManagementPanel';
+import ScheduleManagementPanel from './components/ScheduleManagementPanel';
 
 const AdminManagement = () => {
 
@@ -73,6 +74,13 @@ const AdminManagement = () => {
       value: dashboardData?.users?.roleCounts?.filter(r => r.role === "driver").length ?? 0,
       icon: "UserCheck",
       color: "primary"
+    },
+
+    {
+      title: "Schedules",
+      value: dashboardData?.schedules?.totalSchedules ?? 0,
+      icon: "Calendar",
+      color: "success"
     }
 
   ];
@@ -82,6 +90,7 @@ const AdminManagement = () => {
     { id: 'users', label: 'Users', icon: 'Users' },
     { id: 'routes', label: 'Routes', icon: 'Route' },
     { id: 'buses', label: 'Buses', icon: 'Bus' },
+    { id: 'schedules', label: 'Schedules', icon: 'Calendar' },
     { id: 'notifications', label: 'Notifications', icon: 'Bell' }
   ];
 
@@ -95,7 +104,7 @@ const AdminManagement = () => {
           <div className="space-y-6">
 
             {/* Metrics */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
 
               {systemMetrics.map((metric, index) => (
 
@@ -118,7 +127,7 @@ const AdminManagement = () => {
                 System Overview
               </h3>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
 
                 <div className="p-4 bg-muted/30 rounded-lg text-center">
                   <Icon name="Bus" size={22} className="mx-auto text-primary mb-2"/>
@@ -160,6 +169,16 @@ const AdminManagement = () => {
                   </p>
                 </div>
 
+                <div className="p-4 bg-muted/30 rounded-lg text-center">
+                  <Icon name="Calendar" size={22} className="mx-auto text-success mb-2"/>
+                  <p className="text-lg font-semibold text-foreground">
+                    {dashboardData?.schedules?.totalSchedules ?? 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Schedules
+                  </p>
+                </div>
+
               </div>
 
             </div>
@@ -176,6 +195,9 @@ const AdminManagement = () => {
 
       case 'buses':
         return <BusManagementPanel />;
+
+      case 'schedules':
+        return <ScheduleManagementPanel />;
 
       case 'notifications':
         return <NotificationCenter />;
