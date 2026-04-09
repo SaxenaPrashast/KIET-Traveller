@@ -391,10 +391,19 @@ router.put('/:id/assign-bus', validateObjectId(), authorize('admin'), asyncHandl
     });
   }
 
+  // Remove the bus from any previously assigned routes so one bus maps to one route assignment
+  await Route.updateMany(
+    { _id: { $ne: routeId }, assignedBuses: busId },
+    { $pull: { assignedBuses: busId } }
+  );
+
   // Add bus to route's assigned buses
   route.assignedBuses = [busId];
-    await route.save();
-  
+  await route.save();
+
+  // Keep the bus record in sync with the route assignment shown in admin/driver dashboards
+  bus.currentRoute = route._id;
+  await bus.save();
 
   res.json({
     success: true,
@@ -428,6 +437,12 @@ router.put('/:id/remove-bus', validateObjectId(), authorize('admin'), asyncHandl
   // Remove bus from route's assigned buses
   route.assignedBuses = route.assignedBuses.filter(id => id.toString() !== busId);
   await route.save();
+
+  const bus = await Bus.findById(busId);
+  if (bus && bus.currentRoute && bus.currentRoute.toString() === routeId) {
+    bus.currentRoute = null;
+    await bus.save();
+  }
 
   res.json({
     success: true,

@@ -162,6 +162,64 @@ router.put('/:id', validateObjectId(), authorize('admin'), asyncHandler(async (r
   const { route, bus, driver, date, startTime, endTime, tripType, notes } = req.body;
   const scheduleId = req.params.id;
 
+  const existingSchedule = await Schedule.findById(scheduleId);
+  if (!existingSchedule) {
+    return res.status(404).json({
+      success: false,
+      message: 'Schedule not found'
+    });
+  }
+
+  const nextRoute = route || existingSchedule.route;
+  const nextBus = bus || existingSchedule.bus;
+  const nextDriver = driver || existingSchedule.driver;
+  const nextDate = date || existingSchedule.date;
+
+  if (route) {
+    const routeDoc = await Route.findById(route);
+    if (!routeDoc) {
+      return res.status(400).json({
+        success: false,
+        message: 'Route not found'
+      });
+    }
+  }
+
+  if (bus) {
+    const busDoc = await Bus.findById(bus);
+    if (!busDoc) {
+      return res.status(400).json({
+        success: false,
+        message: 'Bus not found'
+      });
+    }
+  }
+
+  if (driver) {
+    const driverDoc = await User.findById(driver);
+    if (!driverDoc || driverDoc.role !== 'driver') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid driver'
+      });
+    }
+  }
+
+  const conflictingSchedule = await Schedule.findOne({
+    _id: { $ne: scheduleId },
+    $or: [
+      { bus: nextBus, date: nextDate, status: { $in: ['scheduled', 'in_progress'] } },
+      { driver: nextDriver, date: nextDate, status: { $in: ['scheduled', 'in_progress'] } }
+    ]
+  });
+
+  if (conflictingSchedule) {
+    return res.status(400).json({
+      success: false,
+      message: 'Schedule conflict: Bus or driver already has a schedule for this date'
+    });
+  }
+
   const updateData = {
     lastModifiedBy: req.user._id
   };
@@ -180,13 +238,6 @@ router.put('/:id', validateObjectId(), authorize('admin'), asyncHandler(async (r
     updateData,
     { new: true, runValidators: true }
   ).populate('route bus driver');
-
-  if (!schedule) {
-    return res.status(404).json({
-      success: false,
-      message: 'Schedule not found'
-    });
-  }
 
   res.json({
     success: true,
