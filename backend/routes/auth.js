@@ -211,7 +211,7 @@ router.post('/logout', authenticateToken, asyncHandler(async (req, res) => {
 router.get('/me', authenticateToken, asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id)
     .select('-password')
-    .populate('assignedBus', 'busNumber registrationNumber status currentSpeed currentStatus currentRoute');
+    .populate('assignedBus', 'busNumber registrationNumber status capacity currentLocation currentOccupancy lastLocationUpdate currentSpeed currentStatus currentRoute');
 
   res.json({
     success: true,
