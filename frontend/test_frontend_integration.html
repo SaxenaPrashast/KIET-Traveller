@@ -87,6 +87,18 @@
             <p><strong>Admin:</strong> test.admin@kiet.edu / test123</p>
         </div>
 
+        <div class="credentials">
+            <h3>✅ Login Test Checklist</h3>
+            <ul>
+                <li>Choose a role from the Role selector.</li>
+                <li>Confirm the Email and Password auto-fill for that role.</li>
+                <li>Click “Test Login” and verify a success message.</li>
+                <li>Expected: response shows user email, role, and token received.</li>
+                <li>Negative test: edit the password to an incorrect value.</li>
+                <li>Expected: “Login Failed” with a clear error message.</li>
+            </ul>
+        </div>
+
         <form id="authForm">
             <div class="form-group">
                 <label for="role">Role:</label>

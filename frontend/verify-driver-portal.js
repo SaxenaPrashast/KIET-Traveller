@@ -56,8 +56,8 @@ const checks = [
   }
 ];
 
-console.log('\n🚌 Driver Portal - Component Verification\n');
-console.log('=' .repeat(60));
+// console.log('\n🚌 Driver Portal - Component Verification\n');
+// console.log('=' .repeat(60));
 
 let passedChecks = 0;
 let failedChecks = 0;
@@ -66,40 +66,40 @@ checks.forEach((check) => {
   try {
     const filePath = path.join(__dirname, check.path);
     if (!fs.existsSync(filePath)) {
-      console.log(`❌ ${check.name}`);
-      console.log(`   └─ File not found: ${check.path}`);
+      // console.log(`❌ ${check.name}`);
+      // console.log(`   └─ File not found: ${check.path}`);
       failedChecks++;
       return;
     }
 
     const content = fs.readFileSync(filePath, 'utf8');
     if (check.validate(content)) {
-      console.log(`✅ ${check.name}`);
+      // console.log(`✅ ${check.name}`);
       passedChecks++;
     } else {
-      console.log(`⚠️  ${check.name}`);
-      console.log(`   └─ Content validation failed`);
+      // console.log(`⚠️  ${check.name}`);
+      // console.log(`   └─ Content validation failed`);
       failedChecks++;
     }
   } catch (error) {
-    console.log(`❌ ${check.name}`);
-    console.log(`   └─ Error: ${error.message}`);
+    // console.log(`❌ ${check.name}`);
+    // console.log(`   └─ Error: ${error.message}`);
     failedChecks++;
   }
 });
 
-console.log('=' .repeat(60));
-console.log(`\nResults: ${passedChecks} passed, ${failedChecks} failed`);
+// console.log('=' .repeat(60));
+// console.log(`\nResults: ${passedChecks} passed, ${failedChecks} failed`);
 
 if (failedChecks === 0) {
-  console.log('\n✨ All checks passed! Driver portal is ready.\n');
-  console.log('Next steps:');
-  console.log('1. Start backend: cd backend && npm start');
-  console.log('2. Start frontend: npm start');
-  console.log('3. Login as driver role user');
-  console.log('4. Access /driver-dashboard\n');
+  // console.log('\n✨ All checks passed! Driver portal is ready.\n');
+  // console.log('Next steps:');
+  // console.log('1. Start backend: cd backend && npm start');
+  // console.log('2. Start frontend: npm start');
+  // console.log('3. Login as driver role user');
+  // console.log('4. Access /driver-dashboard\n');
   process.exit(0);
 } else {
-  console.log('\n⚠️  Some checks failed. Please review the issues above.\n');
+  // console.log('\n⚠️  Some checks failed. Please review the issues above.\n');
   process.exit(1);
 }

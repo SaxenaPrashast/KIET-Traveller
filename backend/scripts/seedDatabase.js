@@ -46,6 +46,62 @@ const seedDatabase = async () => {
 
     console.log('👤 Created admin user');
 
+    // Create demo login users used by the frontend
+    const demoUsers = await User.create([
+      {
+        email: 'test.student@kiet.edu',
+        password: 'test123',
+        firstName: 'Test',
+        lastName: 'Student',
+        role: 'student',
+        studentId: 'TSTSTU001',
+        department: 'Computer Science',
+        year: '3rd',
+        hostelBlock: 'Block A',
+        isEmailVerified: true,
+        isActive: true
+      },
+      {
+        email: 'test.staff@kiet.edu',
+        password: 'test123',
+        firstName: 'Test',
+        lastName: 'Staff',
+        role: 'staff',
+        employeeId: 'TSTSTF001',
+        designation: 'Professor',
+        department: 'Computer Science',
+        phone: '+919000000001',
+        isEmailVerified: true,
+        isActive: true
+      },
+      {
+        email: 'test.driver@kiet.edu',
+        password: 'test123',
+        firstName: 'Test',
+        lastName: 'Driver',
+        role: 'driver',
+        driverLicense: 'DLTEST0001',
+        experience: 2,
+        phone: '+919000000002',
+        isEmailVerified: true,
+        isActive: true
+      },
+      {
+        email: 'test.admin@kiet.edu',
+        password: 'test123',
+        firstName: 'Test',
+        lastName: 'Admin',
+        role: 'admin',
+        employeeId: 'TSTADM001',
+        designation: 'System Administrator',
+        department: 'IT',
+        isEmailVerified: true,
+        isActive: true
+      }
+    ]);
+
+    console.log(`👤 Created ${demoUsers.length} demo login users`);
+
     // Create driver users
     const drivers = await User.create([
       {
@@ -56,7 +112,7 @@ const seedDatabase = async () => {
         role: 'driver',
         driverLicense: 'DL123456789',
         experience: 5,
-        phone: '+91-9876543210',
+        phone: '+919876543210',
         isEmailVerified: true,
         isActive: true
       },
@@ -68,7 +124,7 @@ const seedDatabase = async () => {
         role: 'driver',
         driverLicense: 'DL987654321',
         experience: 3,
-        phone: '+91-9876543211',
+        phone: '+919876543211',
         isEmailVerified: true,
         isActive: true
       },
@@ -80,7 +136,7 @@ const seedDatabase = async () => {
         role: 'driver',
         driverLicense: 'DL456789123',
         experience: 7,
-        phone: '+91-9876543212',
+        phone: '+919876543212',
         isEmailVerified: true,
         isActive: true
       }
@@ -144,7 +200,7 @@ const seedDatabase = async () => {
         employeeId: 'STF001',
         designation: 'Professor',
         department: 'Computer Science',
-        phone: '+91-9876543213',
+        phone: '+919876543213',
         isEmailVerified: true,
         isActive: true
       },
@@ -157,7 +213,7 @@ const seedDatabase = async () => {
         employeeId: 'STF002',
         designation: 'Assistant Professor',
         department: 'Electronics',
-        phone: '+91-9876543214',
+        phone: '+919876543214',
         isEmailVerified: true,
         isActive: true
       }

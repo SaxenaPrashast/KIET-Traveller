@@ -11,23 +11,24 @@ const path = require('path');
 const fs = require('fs');
 
 const envPath = path.resolve(__dirname, '.env');
-console.log('Loading .env from:', envPath);
-console.log('.env file exists:', fs.existsSync(envPath));
+// console.log('Loading .env from:', envPath);
+// console.log('.env file exists:', fs.existsSync(envPath));
 
 const dotenvResult = require('dotenv').config({ path: envPath, override: true });
 if (dotenvResult.error) {
   console.error('Error loading .env file:', dotenvResult.error);
 } else {
-  console.log('Successfully parsed .env file');
-  console.log('Parsed variables:', Object.keys(dotenvResult.parsed || {}));
+  // console.log('Successfully parsed .env file');
+  // console.log('Parsed variables:', Object.keys(dotenvResult.parsed || {}));
   if (dotenvResult.parsed) {
-    console.log('MONGODB_URI from dotenv:', dotenvResult.parsed.MONGODB_URI ? '(present)' : '(NOT present in parsed)');
+    // console.log('MONGODB_URI from dotenv:', dotenvResult.parsed.MONGODB_URI ? '(present)' : '(NOT present in parsed)');
   }
 }
 
+// Log presence of the variable (don't print secrets)
 console.log('MONGODB_URI in process.env:', Boolean(process.env.MONGODB_URI));
 if (process.env.MONGODB_URI) {
-  console.log('Connection string starts with:', process.env.MONGODB_URI.substring(0, 20) + '...');
+  // console.log('Connection string starts with:', process.env.MONGODB_URI.substring(0, 20) + '...');
 }
 
 // Import routes
@@ -39,6 +40,7 @@ const scheduleRoutes = require('./routes/schedules');
 const trackingRoutes = require('./routes/tracking');
 const notificationRoutes = require('./routes/notifications');
 const adminRoutes = require('./routes/admin');
+const chatbotRoutes = require('./routes/chatbot');
 
 // Import middleware
 const { errorHandler } = require('./middleware/errorHandler');
@@ -110,6 +112,7 @@ app.use('/api/schedules', authenticateToken, scheduleRoutes);
 app.use('/api/tracking', authenticateToken, trackingRoutes);
 app.use('/api/notifications', authenticateToken, notificationRoutes);
 app.use('/api/admin', authenticateToken, adminRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 // Socket.IO connection handling
 const socketHandlers = socketHandler(io);
@@ -138,19 +141,38 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/kiet_trav
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully');
+  // console.log('SIGTERM received, shutting down gracefully');
   server.close(() => {
     console.log('Process terminated');
     mongoose.connection.close();
   });
 });
 
-const PORT = process.env.PORT || 5000;
+const basePort = parseInt(process.env.PORT, 10) || 5000;
+let currentPort = basePort;
 
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`📡 Socket.IO server ready`);
+const startServer = (port) => {
+  server.listen(port, () => {
+    console.log(`🚀 Server running on port ${port}`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log('📡 Socket.IO server ready');
+  });
+};
+
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    const nextPort = currentPort + 1;
+    console.warn(`Port ${currentPort} is in use. Trying ${nextPort}...`);
+    currentPort = nextPort;
+    startServer(currentPort);
+    return;
+  }
+
+  console.error('Server error:', error);
+  process.exit(1);
 });
+
+app.use(express.static(path.join(__dirname, '/dist')));
+startServer(currentPort);
 
 module.exports = { app, server, io };
