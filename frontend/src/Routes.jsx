@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter, Routes as RouterRoutes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { GeofenceProvider } from "./contexts/GeofenceContext";
 import ScrollToTop from "components/ScrollToTop";
 import ErrorBoundary from "components/ErrorBoundary";
 import ProtectedRoute from "components/ProtectedRoute";
@@ -20,6 +21,7 @@ const Routes = () => {
   return (
     <ThemeProvider>
       <AuthProvider>
+        <GeofenceProvider>
         <BrowserRouter>
           <ErrorBoundary>
             <ScrollToTop />
@@ -76,11 +78,12 @@ const Routes = () => {
                 <RoutePreview />
               </ProtectedRoute>
             } />
-            
+
             <Route path="*" element={<NotFound />} />
           </RouterRoutes>
         </ErrorBoundary>
       </BrowserRouter>
+      </GeofenceProvider>
       </AuthProvider>
     </ThemeProvider>
   );

@@ -458,4 +458,104 @@ router.get('/route/:routeId/eta', validateObjectId(), authenticateToken, asyncHa
   });
 }));
 
+// =============================================
+// GEOFENCE ENDPOINTS
+// =============================================
+
+const User = require('../models/User');
+
+// @desc    Get user's geofence configuration
+// @route   GET /api/tracking/geofence/config
+// @access  Private (Student/Staff)
+router.get('/geofence/config', authenticateToken, asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id).select('geofence');
+
+  res.json({
+    success: true,
+    data: {
+      geofence: user?.geofence || {
+        enabled: false,
+        radius: 500,
+        assignedStopId: null,
+        assignedRouteId: null,
+        assignedStopName: null
+      }
+    }
+  });
+}));
+
+// @desc    Update user's geofence configuration
+// @route   PUT /api/tracking/geofence/config
+// @access  Private (Student/Staff)
+router.put('/geofence/config', authenticateToken, asyncHandler(async (req, res) => {
+  const { enabled, radius, assignedStopId, assignedRouteId, assignedStopName } = req.body;
+
+  const updateData = {};
+
+  if (typeof enabled === 'boolean') {
+    updateData['geofence.enabled'] = enabled;
+  }
+
+  if (radius !== undefined) {
+    const clampedRadius = Math.max(200, Math.min(5000, Number(radius)));
+    updateData['geofence.radius'] = clampedRadius;
+  }
+
+  if (assignedStopId !== undefined) {
+    updateData['geofence.assignedStopId'] = assignedStopId || null;
+  }
+
+  if (assignedRouteId !== undefined) {
+    updateData['geofence.assignedRouteId'] = assignedRouteId || null;
+  }
+
+  if (assignedStopName !== undefined) {
+    updateData['geofence.assignedStopName'] = assignedStopName || null;
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    { $set: updateData },
+    { new: true, runValidators: true }
+  ).select('geofence');
+
+  res.json({
+    success: true,
+    message: 'Geofence configuration updated',
+    data: {
+      geofence: user.geofence
+    }
+  });
+}));
+
+// @desc    Get all available stops (for geofence stop selection)
+// @route   GET /api/tracking/geofence/stops
+// @access  Private
+router.get('/geofence/stops', authenticateToken, asyncHandler(async (req, res) => {
+  const routes = await Route.find({ isActive: true }).select('routeNumber name stops');
+
+  const stops = [];
+  for (const route of routes) {
+    for (const stop of route.stops) {
+      if (stop.isActive !== false) {
+        stops.push({
+          stopId: stop._id,
+          stopName: stop.name,
+          routeId: route._id,
+          routeNumber: route.routeNumber,
+          routeName: route.name,
+          coordinates: stop.location?.coordinates || [],
+          sequence: stop.sequence
+        });
+      }
+    }
+  }
+
+  res.json({
+    success: true,
+    data: { stops }
+  });
+}));
+
 module.exports = router;
+

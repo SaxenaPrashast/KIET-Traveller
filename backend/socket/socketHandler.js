@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Bus = require('../models/Bus');
 const Schedule = require('../models/Schedule');
+const { processGeofence } = require('../utils/geofence');
 
 
 const connectedUsers = new Map();
@@ -99,6 +100,9 @@ const socketHandler = (io) => {
           heading: bus.heading,
           timestamp: new Date()
         });
+
+        // Geofence check — notify students/staff near stops
+        processGeofence(bus, io);
 
         socket.emit('locationUpdated', { success: true });
       } catch (error) {
@@ -296,6 +300,25 @@ const socketHandler = (io) => {
     socket.on('leaveBus', (busId) => {
       socket.leave(`bus_${busId}`);
       socket.emit('leftBus', { busId });
+    });
+
+    // Handle geofence subscription — student/staff subscribes to alerts
+    socket.on('subscribeGeofence', (data) => {
+      const { stopId } = data || {};
+      if (stopId) {
+        socket.join(`stop_${stopId}`);
+        socket.emit('geofenceSubscribed', { stopId });
+        console.log(`User ${user.email} subscribed to geofence for stop ${stopId}`);
+      }
+    });
+
+    // Handle geofence unsubscription
+    socket.on('unsubscribeGeofence', (data) => {
+      const { stopId } = data || {};
+      if (stopId) {
+        socket.leave(`stop_${stopId}`);
+        socket.emit('geofenceUnsubscribed', { stopId });
+      }
     });
 
     // Handle emergency alert (for drivers)

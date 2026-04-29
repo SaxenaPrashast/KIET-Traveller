@@ -82,7 +82,21 @@ app.use(compression());
 app.use(morgan('combined'));
 // app.use(limiter);
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:4028",
+  origin: function(origin, callback) {
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "http://localhost:4028",
+      "http://localhost:3000",
+      "http://127.0.0.1:5173",
+      "http://127.0.0.1:4028"
+    ];
+
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -161,11 +175,8 @@ const startServer = (port) => {
 
 server.on('error', (error) => {
   if (error.code === 'EADDRINUSE') {
-    const nextPort = currentPort + 1;
-    console.warn(`Port ${currentPort} is in use. Trying ${nextPort}...`);
-    currentPort = nextPort;
-    startServer(currentPort);
-    return;
+    console.error(`❌ Port ${currentPort} is already in use. Please close the other process or use a different port.`);
+    process.exit(1);
   }
 
   console.error('Server error:', error);
