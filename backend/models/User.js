@@ -118,6 +118,32 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  // Geofence preferences
+  geofence: {
+    enabled: {
+      type: Boolean,
+      default: false
+    },
+    radius: {
+      type: Number,
+      default: 500, // meters
+      min: 200,
+      max: 5000
+    },
+    assignedStopId: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null
+    },
+    assignedRouteId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Route',
+      default: null
+    },
+    assignedStopName: {
+      type: String,
+      default: null
+    }
+  },
   // Staff specific fields
   employeeId: {
     type: String,

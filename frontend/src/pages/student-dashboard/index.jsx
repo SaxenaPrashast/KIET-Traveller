@@ -8,6 +8,8 @@ import UpcomingScheduleCard from './components/UpcomingScheduleCard';
 import Announcements from './components/Announcements';
 import MyTransportCard from './components/MyTransportCard';
 import DashboardStats from './components/DashboardStats';
+import GeofenceSettings from './components/GeofenceSettings';
+import GeofenceAlertCard from '../../components/GeofenceAlertCard';
 
 const StudentDashboard = () => {
   const { user, token } = useAuth();
@@ -99,6 +101,9 @@ const StudentDashboard = () => {
               {/* LEFT */}
               <div className="lg:col-span-2 space-y-6">
 
+                {/* 🌐 Geofence Alerts */}
+                <GeofenceAlertCard />
+
                 {/* 🚍 Live Bus */}
                 {liveBuses.length === 0 ? (
                   <div className="bg-card border border-border rounded-lg p-6 text-center">
@@ -125,6 +130,9 @@ const StudentDashboard = () => {
 
               {/* RIGHT */}
               <div className="space-y-6">
+
+                {/* 📡 Geofence Settings */}
+                <GeofenceSettings />
 
                 {/* 🧠 Smart Card */}
                 <MyTransportCard 
